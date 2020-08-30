@@ -1,42 +1,20 @@
 package com.yuan.lcmemulator;
 
-import java.io.Serializable;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import com.yuan.lcdemulatorview.LcmEmulatorView;
-
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo.State;
 import android.os.Bundle;
-import android.os.Debug;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Paint.Style;
-import android.os.Parcelable;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
     private boolean switcher = false;
-    private LcmEmulatorView mLcmEmulatorView;
+    private CharLcmView mCharLcdView;
     private SocketServer ss;
 
     @Override
@@ -47,16 +25,16 @@ public class MainActivity extends Activity {
         Log.d("LCDEM", "onCreate...");
 
 
-        mLcmEmulatorView = (LcmEmulatorView) findViewById(R.id.LcmEmuMain);
-        mLcmEmulatorView.setColRow(20, 4);
-        mLcmEmulatorView.setLcdPanelColor(getResources().getColor(R.color.LcdPanelColor));
-        mLcmEmulatorView.setNegetivePixelColor(getResources().getColor(R.color.NegetivePixelColor));
-        mLcmEmulatorView.setPostivePixelColor(getResources().getColor(R.color.PostivePixelColor));
-        mLcmEmulatorView.clearScreen();
-        mLcmEmulatorView.writeStr(getIpAddressString());
-        mLcmEmulatorView.updateFullScreen();
+        mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
+        mCharLcdView.setColRow(20, 4);
+        //mCharLcdView.setLcdPanelColor(getResources().getColor(R.color.LcdPanelColor));
+        //mCharLcdView.setNegetivePixelColor(getResources().getColor(R.color.NegetivePixelColor));
+        //mCharLcdView.setPostivePixelColor(getResources().getColor(R.color.PostivePixelColor));
+        //mCharLcdView.clearScreen();
+        mCharLcdView.writeStr(getIpAddressString());
+        //mCharLcdView.updateFullScreen();
 
-        ss = new SocketServer(2400, mLcmEmulatorView);
+        ss = new SocketServer(2400, mCharLcdView);
         //savedInstanceState.putParcelable("mLcmEmulatorView", (Parcelable) mLcmEmulatorView);
         //savedInstanceState.putParcelable("ss", (Parcelable) ss);
 
@@ -83,7 +61,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d("LCDEM", "onResume...");
-        ss = new SocketServer(2400, mLcmEmulatorView);
+        ss = new SocketServer(2400, mCharLcdView);
     }
 
     public static String getIpAddressString() {

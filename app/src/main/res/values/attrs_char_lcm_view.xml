@@ -1,0 +1,8 @@
+<resources>
+    <declare-styleable name="CharLcmView">
+        <attr name="text" format="string" />
+        <attr name="negativePixelColor" format="color" />
+        <attr name="positivePixelColor" format="color" />
+        <attr name="lcdPanelColor" format="color" />
+    </declare-styleable>
+</resources>

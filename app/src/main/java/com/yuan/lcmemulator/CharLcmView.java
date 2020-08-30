@@ -1,43 +1,53 @@
-package com.yuan.lcdemulatorview;
-
-import java.util.Arrays;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+package com.yuan.lcmemulator;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 
-public class LcmEmulatorView extends SurfaceView implements
-        SurfaceHolder.Callback {
+import java.util.Arrays;
+
+
+/**
+ * TODO: document your custom view class.
+ */
+public class CharLcmView extends View {
+    private String mExampleString; // TODO: use a default from R.string...
+    private int mExampleColor = Color.RED; // TODO: use a default from R.color...
+    private float mExampleDimension = 0; // TODO: use a default from R.dimen...
+    private Drawable mExampleDrawable;
+
+    private TextPaint mTextPaint;
+    private float mTextWidth;
+    private float mTextHeight;
+
 
     private String TAG = "LCDEM";
 
-    public int getNegetivePixelColor() {
-        return mNegetivePixelColor;
+    public int getNegativePixelColor() {
+        return mNegativePixelColor;
     }
 
-    public void setNegetivePixelColor(int mNegetivePixelColor) {
-        this.mNegetivePixelColor = mNegetivePixelColor;
+    public void setNegativePixelColor(int mNegativePixelColor) {
+        this.mNegativePixelColor = mNegativePixelColor;
     }
 
-    public int getPostivePixelColor() {
-        return mPostivePixelColor;
+    public int getPositivePixelColor() {
+        return mPositivePixelColor;
     }
 
-    public void setPostivePixelColor(int mPostivePixelColor) {
-        this.mPostivePixelColor = mPostivePixelColor;
+    public void setPositivePixelColor(int mPositivePixelColor) {
+        this.mPositivePixelColor = mPositivePixelColor;
     }
 
     public int getLcdPanelColor() {
@@ -49,14 +59,11 @@ public class LcmEmulatorView extends SurfaceView implements
     }
 
     // Color
-    private int mNegetivePixelColor;
-    private int mPostivePixelColor;
+    private int mNegativePixelColor;
+    private int mPositivePixelColor;
     private int mLcdPanelColor;
 
     // SurfaceView
-    private SurfaceHolder mSurfaceHolder;
-    private DrawThread mDrawThread;
-    private boolean mDrawThreadRunFlag;
     private int mSurfaceHeight;
     private int mSurfaceWidth;
 
@@ -73,98 +80,51 @@ public class LcmEmulatorView extends SurfaceView implements
     // Font generation class instance
     private FontCalc mFontCalc;
 
-    // Blocking queue for cmd transfer
-    private BlockingQueue<DrawParam> mDrawParamQueue;
-
-    public void updateFullScreen() {
-        DrawParam dp = new DrawParam(DrawParam.CmdUpdateFullScreen, null);
-        try {
-            mDrawParamQueue.put(dp);
-        } catch (InterruptedException e) {
-            Log.e(TAG, e.getMessage());
-        }
+    public String getText() {
+        return mText;
     }
 
-    private void cursorAutoInc() {
-        if (mCursorX < mColNum - 1) {
-            ++mCursorX;
-        } else {
-            ++mCursorY;
-            mCursorX = 0;
-        }
+    public void setText(String mText) {
+        this.mText = mText;
     }
 
-    public void writeChar(char ch) {
+    private String mText;
 
-        // Log.i(TAG, "User cmd:writeChar.");
 
-        Point postion = new Point(mCursorX, mCursorY);
-        DrawCharParam dcp = new DrawCharParam(postion, ch);
-        DrawParam dp = new DrawParam(DrawParam.CmdDrawChar, dcp);
-
-        mLcmChars[mCursorY * mColNum + mCursorX] = ch;
-
-        dcp.mChar = ch;
-
-        try {
-            mDrawParamQueue.put(dp);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        cursorAutoInc();
+    public CharLcmView(Context context) {
+        super(context);
+        init(null, 0);
     }
 
-    public void writeStr(String str) {
-
-        Point postion = new Point(mCursorX, mCursorY);
-        char[] chars = str.toCharArray();
-        DrawStrParam dsp = new DrawStrParam(postion, chars);
-        DrawParam dp = new DrawParam(DrawParam.CmdDrawStr, dsp);
-
-        // mLcmChars[mCursorY * mColNum + mCursorX] = ch;
-        try {
-            System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
-                    chars.length);
-            mCursorX += (mCursorX + mCursorY * mColNum + chars.length) % mColNum;
-            // mDrawParamQueue.put(dp);
-            DrawParam dp2 = new DrawParam(DrawParam.CmdUpdateFullScreen, null);
-            mDrawParamQueue.put(dp2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+    public CharLcmView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(attrs, 0);
     }
 
-
-    public void setCustomFont(int index, byte[] rawdata) {
-
-        System.arraycopy(rawdata, 0, mCustomCharsRaw, index * 8, rawdata.length);
-        reGenResoures();
+    public CharLcmView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(attrs, defStyle);
     }
 
-    public void setColRow(int col, int row) {
-        mColNum = col;
-        mRowNum = row;
-        // reGenResoures();
+    private void init(AttributeSet attrs, int defStyle) {
+        // Load attributes
+        final TypedArray a = getContext().obtainStyledAttributes(
+                attrs, R.styleable.CharLcmView, defStyle, 0);
 
-    }
-
-    public void getColRow(int col, int row) {
-        col = mColNum;
-        row = mRowNum;
-    }
-
-    private void setDefaultParam() {
-
-        // SurfaceView
-        mSurfaceHolder = getHolder();
-        mSurfaceHolder.addCallback(this);
-        // Thread
-        mDrawThreadRunFlag = false;
         // Color
-        mNegetivePixelColor = Color.rgb(100, 25, 0);
-        mPostivePixelColor = Color.rgb(255, 255, 0);
-        mLcdPanelColor = Color.rgb(80, 0, 0);
+        mNegativePixelColor = a.getColor(
+                R.styleable.CharLcmView_negativePixelColor,
+                mNegativePixelColor);
+        mPositivePixelColor = a.getColor(
+                R.styleable.CharLcmView_positivePixelColor,
+                mPositivePixelColor);
+        mLcdPanelColor = a.getColor(
+                R.styleable.CharLcmView_lcdPanelColor,
+                mLcdPanelColor);
+
+        mText = a.getString(R.styleable.CharLcmView_text);
+
+        a.recycle();
         // Size
         mSurfaceHeight = 100;
         mSurfaceWidth = 50;
@@ -184,325 +144,44 @@ public class LcmEmulatorView extends SurfaceView implements
         for (int i = 0; i < mRowNum * mColNum; i++) {
             mLcmChars[i] = ' '; // 空格字符
         }
+        char[] chars = mText.toCharArray();
+        System.arraycopy(chars, 0, mLcmChars, 0,
+                chars.length <= mLcmChars.length ? chars.length : mLcmChars.length);
 
-        // que
-        mDrawParamQueue = new ArrayBlockingQueue<DrawParam>(50);
+        reGenResoures();
+        // Update TextPaint and text measurements from attributes
+        forceReDraw();
+    }
 
+    private void forceReDraw() {
+        this.postInvalidate();
+    }
+
+    public void writeStr(String str) {
+
+        Point postion = new Point(mCursorX, mCursorY);
+        char[] chars = str.toCharArray();
+        System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
+                chars.length);
+        mCursorX += (mCursorX + mCursorY * mColNum + chars.length) % mColNum;
+        forceReDraw();
+
+    }
+
+    public void setCustomFont(int index, byte[] rawdata) {
+
+        System.arraycopy(rawdata, 0, mCustomCharsRaw, index * 8, rawdata.length);
+        reGenResoures();
+        forceReDraw();
     }
 
     public void clearScreen() {
 
-        Log.i(TAG, "User cmd:clear screen");
-
-        DrawParam dp = new DrawParam(DrawParam.CmdClearScreen, null);
-
-        // for (int i = 0; i < mRowNum * mColNum; i++) {
-        // mLcmChars[i] = ' '; // 空格字符
-        // }
+        for (int i = 0; i < mRowNum * mColNum; i++) {
+            mLcmChars[i] = ' '; // 空格字符
+        }
         mCursorX = 0;
         mCursorY = 0;
-        try {
-            mDrawParamQueue.put(dp);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public LcmEmulatorView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
-        setDefaultParam();
-
-    }
-
-    // 在这里我们将测试canvas提供的绘制图形方法
-    private Rect dirtyRect = new Rect();
-    private PointF acutalCursor = new PointF();
-    private Bitmap charBitmap = null;
-
-    public void Draw(SurfaceHolder mSurfaceHolder, DrawParam dp) {
-
-        Canvas canvas = null;
-
-        // Log.i(TAG, "Try to Draw.");
-        switch (dp.mCmdId) {
-            case DrawParam.CmdDrawChar:
-
-                if (mFontCalc != null) {
-                    mFontCalc
-                            .getActualCursor(
-                                    ((DrawCharParam) dp.mArgObj).mCharPostion,
-                                    acutalCursor);
-
-                    charBitmap = mFontCalc
-                            .getCharBitmap(((DrawCharParam) dp.mArgObj).mChar);
-                    // dirtyRect = new Rect();
-                    dirtyRect.left = (int) acutalCursor.x - 3;
-                    dirtyRect.top = (int) acutalCursor.y - 3;
-                    dirtyRect.right = dirtyRect.left + charBitmap.getWidth() + 3;
-                    dirtyRect.bottom = dirtyRect.top + charBitmap.getHeight() + 3;
-                }
-
-                canvas = mSurfaceHolder.lockCanvas(dirtyRect);
-                if (canvas != null) {
-                    // canvas.drawColor(mLcdPanelColor);
-                    // Log.i(TAG, "Draw dirty rect.);
-                    canvas.drawBitmap(charBitmap, acutalCursor.x, acutalCursor.y,
-                            null);
-                }
-                if (canvas != null)
-                    mSurfaceHolder.unlockCanvasAndPost(canvas);
-
-                break;
-            case DrawParam.CmdUpdateFullScreen:
-
-                for (int i = 0; i < 1; i++) {
-                    canvas = mSurfaceHolder.lockCanvas();
-                    if (canvas != null) {
-
-                        char[] MirrorLcmChars = new char[mLcmChars.length];
-                        MirrorLcmChars = Arrays.copyOf(mLcmChars, mLcmChars.length);
-                        // Log.i(TAG, "Draw full screen.");
-                        canvas.drawColor(mLcdPanelColor);
-                        int dy = 0;
-                        PointF postion = new PointF();
-                        if (mFontCalc != null) {
-                            for (int y = 0; y < mRowNum; y++) {
-                                for (int x = 0; x < mColNum; x++) {
-                                    mFontCalc.getActualCursor(x, y, postion);// y*mColNum+x+32
-                                    canvas.drawBitmap(mFontCalc
-                                                    .getCharBitmap(MirrorLcmChars[dy + x]),
-                                            postion.x, postion.y, null);
-                                }
-                                dy += mColNum;
-                            }
-                        }
-                    }
-                    if (canvas != null)
-                        mSurfaceHolder.unlockCanvasAndPost(canvas);
-                }
-                break;
-
-            case DrawParam.CmdClearScreen:
-
-                for (int i = 0; i < 2; i++) {
-                    canvas = mSurfaceHolder.lockCanvas();
-                    if (canvas != null) {
-
-                        // Log.i(TAG, "Draw full screen.");
-                        canvas.drawColor(mLcdPanelColor);
-
-                        PointF postion = new PointF();
-                        if (mFontCalc != null) {
-                            for (int y = 0, dy = 0; y < mRowNum; y++) {
-                                for (int x = 0; x < mColNum; x++) {
-                                    mFontCalc.getActualCursor(x, y, postion);// y*mColNum+x+32
-                                    canvas.drawBitmap(mFontCalc.getCharBitmap(' '),
-                                            postion.x, postion.y, null);
-                                }
-                                dy += mColNum;
-                            }
-                        }
-                    }
-                    if (canvas != null)
-                        mSurfaceHolder.unlockCanvasAndPost(canvas);
-
-                    Arrays.fill(mLcmChars, ' ');
-                }
-
-                break;
-            case DrawParam.CmdDrawStr:
-                float delt_x = (float) mFontCalc.mCharWidthOffest;
-                float start_x = acutalCursor.x;
-                char[] str = ((DrawStrParam) dp.mArgObj).mStr;
-                if (mFontCalc != null) {
-                    mFontCalc.getActualCursor(
-                            ((DrawStrParam) dp.mArgObj).mStrPostion, acutalCursor);
-
-                    // Log.i(TAG,"Draw Str:Str_lem="+str.length+" postion="+((DrawStrParam)dp.mArgObj).mStrPostion.x+","+((DrawStrParam)dp.mArgObj).mStrPostion.y);
-                    charBitmap = mFontCalc.getCharBitmap(str[0]);
-                    // dirtyRect = new Rect();
-                    dirtyRect.left = (int) acutalCursor.x - 3;
-                    dirtyRect.top = (int) acutalCursor.y - 3;
-                    dirtyRect.right = dirtyRect.left
-                            + (int) (delt_x * (str.length - 1)) + 3;
-                    dirtyRect.bottom = dirtyRect.top + charBitmap.getHeight() + 3;
-                }
-
-                canvas = mSurfaceHolder.lockCanvas(dirtyRect);
-                if (canvas != null) {
-                    // canvas.drawColor(mLcdPanelColor);
-                    // Log.i(TAG, "Draw dirty rect.);
-
-                    for (int i = 0; i < (str.length - 1); i++) {
-                        charBitmap = mFontCalc.getCharBitmap(str[i]);
-                        canvas.drawBitmap(charBitmap, start_x, acutalCursor.y, null);
-                        start_x += delt_x;
-                    }
-                }
-                if (canvas != null)
-                    mSurfaceHolder.unlockCanvasAndPost(canvas);
-
-                break;
-
-        }
-
-    }
-
-    // public synchronized void issueRedraw() {
-    // synchronized (token) {
-    // token.notify();
-    // }
-    // }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder mSurfaceHolder, int format,
-                               int width, int height) {
-        Log.i(TAG, "onSurfaceChanged");
-
-        mDrawParamQueue = new ArrayBlockingQueue<DrawParam>(50);
-        mSurfaceHeight = height;
-        mSurfaceWidth = width;
-        reGenResoures();
-
-        mDrawThread = new DrawThread();
-        mDrawThreadRunFlag = true;
-        mDrawThread.start();
-
-    }
-
-    public void reGenResoures() {
-        mFontCalc = new FontCalc(new Point(mColNum, mRowNum), new Point(
-                mSurfaceWidth, mSurfaceHeight), mCustomCharsRaw);
-
-        updateFullScreen();
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder mSurfaceHolder) {
-        Log.i(TAG, "onSurfaceCreated");
-
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder mSurfaceHolder) {
-        Log.i(TAG, "onSurfaceDestroyed");
-        mDrawThreadRunFlag = false;
-
-    }
-
-    class DrawThread extends Thread {
-        @Override
-        public void run() {
-            SurfaceHolder runholder = mSurfaceHolder;
-            Log.i(TAG, "Run into thread.");
-            while (mDrawThreadRunFlag) {
-                DrawParam dp = null;
-                try {
-                    dp = mDrawParamQueue.take();
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Draw(runholder, dp);
-
-            }
-            Log.i(TAG, "Exit from thread.");
-        }
-    }
-
-    public class DrawParam {
-
-        public final static int CmdDrawChar = 1;
-        public final static int CmdUpdateFullScreen = 2;
-        public final static int CmdClearScreen = 3;
-        public final static int CmdDrawStr = 4;
-
-        public int mCmdId;
-        public Object mArgObj;
-
-        public DrawParam(int cmdId, Object arg) {
-            mCmdId = cmdId;
-            mArgObj = arg;
-
-        }
-
-        // public int getCmdId() {
-        // return mCmdId;
-        // }
-        //
-        // public void setCmdId(int cmdId) {
-        // mCmdId = cmdId;
-        // }
-        //
-        // public DrawCharParam getArgObj() {
-        // return mArgObj;
-        // }
-        //
-        // public void setArgObj(DrawCharParam arg) {
-        // mArgObj = arg;
-        // }
-
-    }
-
-
-    public class DrawCharParam {
-
-        public Point mCharPostion;
-        public char mChar;
-
-        public DrawCharParam(Point charPostion, char ch) {
-            mCharPostion = charPostion;
-            mChar = ch;
-
-        }
-
-        // public Point getcharPostion() {
-        // return mCharPostion;
-        // }
-        //
-        // public void setcharPostion(Point charPostion) {
-        // mCharPostion = charPostion;
-        // }
-        //
-        // public char getChar() {
-        // return mChar;
-        // }
-        //
-        // public void setChar(char ch) {
-        // mChar = ch;
-        // }
-
-    }
-
-    public class DrawStrParam {
-
-        public Point mStrPostion;
-        public char[] mStr;
-
-        public DrawStrParam(Point charPostion, char[] str) {
-            mStrPostion = charPostion;
-            mStr = str;
-
-        }
-
-        // public Point getcharPostion() {
-        // return mCharPostion;
-        // }
-        //
-        // public void setcharPostion(Point charPostion) {
-        // mCharPostion = charPostion;
-        // }
-        //
-        // public char getChar() {
-        // return mChar;
-        // }
-        //
-        // public void setChar(char ch) {
-        // mChar = ch;
-        // }
-
     }
 
     public void setCursor(int x, int y) {
@@ -523,6 +202,67 @@ public class LcmEmulatorView extends SurfaceView implements
     public void getCursor(Point cursor) {
         cursor.x = mCursorX;
         cursor.y = mCursorY;
+    }
+
+    public void reGenResoures() {
+        mFontCalc = new FontCalc(new Point(mColNum, mRowNum), new Point(
+                mSurfaceWidth, mSurfaceHeight), mCustomCharsRaw);
+    }
+
+    public void setColRow(int col, int row) {
+        mColNum = col;
+        mRowNum = row;
+        // reGenResoures();
+    }
+
+    public void getColRow(int col, int row) {
+        col = mColNum;
+        row = mRowNum;
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mSurfaceHeight = h;
+        mSurfaceWidth = w;
+        reGenResoures();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // TODO: consider storing these as member variables to reduce
+        // allocations per draw cycle.
+        int paddingLeft = getPaddingLeft();
+        int paddingTop = getPaddingTop();
+        int paddingRight = getPaddingRight();
+        int paddingBottom = getPaddingBottom();
+
+        int contentWidth = getWidth() - paddingLeft - paddingRight;
+        int contentHeight = getHeight() - paddingTop - paddingBottom;
+        mSurfaceHeight = contentHeight;
+        mSurfaceWidth = contentWidth;
+
+
+        char[] MirrorLcmChars = new char[mLcmChars.length];
+        MirrorLcmChars = Arrays.copyOf(mLcmChars, mLcmChars.length);
+        // Log.i(TAG, "Draw full screen.");
+        canvas.drawColor(mLcdPanelColor);
+        int dy = 0;
+        PointF postion = new PointF();
+        if (mFontCalc != null) {
+            for (int y = 0; y < mRowNum; y++) {
+                for (int x = 0; x < mColNum; x++) {
+                    mFontCalc.getActualCursor(x, y, postion);// y*mColNum+x+32
+                    canvas.drawBitmap(mFontCalc
+                                    .getCharBitmap(MirrorLcmChars[dy + x]),
+                            postion.x, postion.y, null);
+                }
+                dy += mColNum;
+            }
+        }
+
     }
 
     public class FontCalc {
@@ -704,7 +444,7 @@ public class LcmEmulatorView extends SurfaceView implements
             Paint pixelPaint = new Paint();
 
             pixelPaint.setAntiAlias(true); // 反锯齿
-            pixelPaint.setStyle(Style.FILL);
+            pixelPaint.setStyle(Paint.Style.FILL);
 
             for (int y = 0; y < mPixelsPerCol; ++y) {
                 for (int x = 0; x < mPixelsPerRow; ++x) {
@@ -719,9 +459,9 @@ public class LcmEmulatorView extends SurfaceView implements
                     RectF pixelRect = new RectF(pixelRectLeft, pixelRectTop,
                             pixelRectRight, pixelRectBottom);
                     if ((raw[y] & (1 << x)) != 0)
-                        pixelPaint.setColor(mPostivePixelColor);
+                        pixelPaint.setColor(mPositivePixelColor);
                     else
-                        pixelPaint.setColor(mNegetivePixelColor);
+                        pixelPaint.setColor(mNegativePixelColor);
                     canvas.drawRect(pixelRect, pixelPaint);
 
                 }
@@ -747,7 +487,7 @@ public class LcmEmulatorView extends SurfaceView implements
             Paint pixelPaint = new Paint();
 
             pixelPaint.setAntiAlias(true); // 反锯齿
-            pixelPaint.setStyle(Style.FILL);
+            pixelPaint.setStyle(Paint.Style.FILL);
 
             for (int x = 0; x < mPixelsPerRow; ++x) {
                 for (int y = 0; y < mPixelsPerCol; ++y) {
@@ -762,9 +502,9 @@ public class LcmEmulatorView extends SurfaceView implements
                     RectF pixelRect = new RectF(pixelRectLeft, pixelRectTop,
                             pixelRectRight, pixelRectBottom);
                     if ((mRawFontsData[(int) (fontIndex * mPixelsPerRow + x)] & (1 << y)) != 0)
-                        pixelPaint.setColor(mPostivePixelColor);
+                        pixelPaint.setColor(mPositivePixelColor);
                     else
-                        pixelPaint.setColor(mNegetivePixelColor);
+                        pixelPaint.setColor(mNegativePixelColor);
                     canvas.drawRect(pixelRect, pixelPaint);
 
                 }
@@ -843,5 +583,4 @@ public class LcmEmulatorView extends SurfaceView implements
         }
 
     }
-
 }

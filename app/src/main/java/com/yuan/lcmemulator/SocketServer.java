@@ -3,7 +3,7 @@ package com.yuan.lcmemulator;
 import java.io.*;
 import java.net.*;
 
-import com.yuan.lcdemulatorview.LcmEmulatorView;
+
 import com.yuan.protocol.FrameProcessor;
 import com.yuan.protocol.ProtocolProcessor;
 import com.yuan.protocol.ReceiveFifo;
@@ -11,11 +11,11 @@ import com.yuan.protocol.ReceiveFifo;
 import android.util.Log;
 
 public class SocketServer {
-    private LcmEmulatorView mLcmEmView;
+    private CharLcmView mLcmEmView;
     private ServerSocket server;
     // MyHandler myHandler;
 
-    public SocketServer(final int port, LcmEmulatorView lcmEmView) {
+    public SocketServer(final int port, CharLcmView lcmEmView) {
 
         mLcmEmView = lcmEmView;
         // myHandler = new MyHandler();

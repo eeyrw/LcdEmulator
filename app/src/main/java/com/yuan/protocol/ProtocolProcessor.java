@@ -2,9 +2,8 @@ package com.yuan.protocol;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Collections;
 
-import com.yuan.lcdemulatorview.LcmEmulatorView;
+import com.yuan.lcmemulator.CharLcmView;
 
 import android.util.Log;
 
@@ -22,9 +21,9 @@ public class ProtocolProcessor {
 
     private static final String TAG = "LCDEM";
 
-    private LcmEmulatorView mLcmEmView;
+    private CharLcmView mLcmEmView;
 
-    public ProtocolProcessor(LcmEmulatorView mLcmEmView) {
+    public ProtocolProcessor(CharLcmView mLcmEmView) {
         this.mLcmEmView = mLcmEmView;
     }
 

@@ -23,6 +23,7 @@ public class ReceiveFifo {
     }
 
     public void write(byte[] cmdRetBuf, int retByteNum) {
+        //TODO
     }
 
     public int read(byte[] cmdBuf, byte cmdLen) throws IOException{
@@ -38,11 +39,5 @@ public class ReceiveFifo {
             n += count;
         }
         return n;
-    }
-
-
-    public void process()
-    {
-
     }
 }

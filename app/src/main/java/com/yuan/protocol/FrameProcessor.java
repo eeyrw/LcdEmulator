@@ -17,10 +17,9 @@ public class FrameProcessor {
         RECV_CMD_LEN,
     }
 
-    ;
     final int EVENT_FRAME_FLAG = 0x776E; //ASCII:"wn"
 
-    EVENT_FRAME_PARSER_STATUS frameParseStatus=IDLE;
+    EVENT_FRAME_PARSER_STATUS frameParseStatus = IDLE;
     byte cmdRetBuf[] = new byte[256];
     byte cmdBuf[] = new byte[256];
     ProtocolProcessor protocolProcessor;
@@ -29,39 +28,36 @@ public class FrameProcessor {
 
     public void ParseEventFrameStream() throws IOException {
         byte streamByte;
-
-
-
         switch (frameParseStatus) {
             case IDLE: {
-                if (client.available()>0) {
+                //if (client.available() > 0) {
                     streamByte = client.read();
                     if (streamByte == ((byte) (0xFF & EVENT_FRAME_FLAG))) {
                         frameParseStatus = SOF_LO;
                     }
-                }
+                //}
             }
             break;
             case SOF_LO: {
-                if (client.available()>0) {
+                //if (client.available() > 0) {
                     streamByte = client.read();
                     if (streamByte == ((byte) (0xFF & (EVENT_FRAME_FLAG >> 8)))) {
                         frameParseStatus = SOF_HI;
                     }
-                }
+                //}
             }
             break;
             case SOF_HI: {
-                if (client.available()>0) {
+                //if (client.available() > 0) {
                     streamByte = client.read();
                     cmdLen = streamByte;
                     frameParseStatus = RECV_CMD_LEN;
-                }
+                //}
             }
             break;
 
             case RECV_CMD_LEN: {
-                if (client.available() >= cmdLen) {
+                //if (client.available() >= cmdLen) {
                     client.read(cmdBuf, cmdLen);
                     int retByteNum = 0;
                     protocolProcessor.Process(cmdBuf);
@@ -75,7 +71,7 @@ public class FrameProcessor {
 
                     frameParseStatus = IDLE;
                     cmdLen = 0;
-                }
+                //}
             }
             break;
 

@@ -24,6 +24,30 @@ public class LcmEmulatorView extends SurfaceView implements
 
     private String TAG = "LCDEM";
 
+    public int getNegetivePixelColor() {
+        return mNegetivePixelColor;
+    }
+
+    public void setNegetivePixelColor(int mNegetivePixelColor) {
+        this.mNegetivePixelColor = mNegetivePixelColor;
+    }
+
+    public int getPostivePixelColor() {
+        return mPostivePixelColor;
+    }
+
+    public void setPostivePixelColor(int mPostivePixelColor) {
+        this.mPostivePixelColor = mPostivePixelColor;
+    }
+
+    public int getLcdPanelColor() {
+        return mLcdPanelColor;
+    }
+
+    public void setLcdPanelColor(int mLcdPanelColor) {
+        this.mLcdPanelColor = mLcdPanelColor;
+    }
+
     // Color
     private int mNegetivePixelColor;
     private int mPostivePixelColor;
@@ -98,14 +122,16 @@ public class LcmEmulatorView extends SurfaceView implements
         DrawParam dp = new DrawParam(DrawParam.CmdDrawStr, dsp);
 
         // mLcmChars[mCursorY * mColNum + mCursorX] = ch;
-            try {
-                System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
-                        chars.length);
-                mCursorX += (mCursorX + mCursorY * mColNum +chars.length)%mColNum;
-                mDrawParamQueue.put(dp);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
+                    chars.length);
+            mCursorX += (mCursorX + mCursorY * mColNum + chars.length) % mColNum;
+            // mDrawParamQueue.put(dp);
+            DrawParam dp2 = new DrawParam(DrawParam.CmdUpdateFullScreen, null);
+            mDrawParamQueue.put(dp2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -231,7 +257,7 @@ public class LcmEmulatorView extends SurfaceView implements
                 break;
             case DrawParam.CmdUpdateFullScreen:
 
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < 1; i++) {
                     canvas = mSurfaceHolder.lockCanvas();
                     if (canvas != null) {
 

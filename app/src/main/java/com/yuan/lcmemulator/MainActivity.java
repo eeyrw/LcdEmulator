@@ -1,5 +1,6 @@
 package com.yuan.lcmemulator;
 
+import java.io.Serializable;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -25,106 +26,84 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Paint.Style;
+import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	private boolean switcher = false;
-	private LcmEmulatorView mLcmEmulatorView;
-	private BroadCastNetStatus receiver;
-	private  SocketServer ss;
+    private boolean switcher = false;
+    private LcmEmulatorView mLcmEmulatorView;
+    private SocketServer ss;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		// Debug.startMethodTracing("test");
-		setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
+        Log.d("LCDEM", "onCreate...");
 
-		mLcmEmulatorView = (LcmEmulatorView) findViewById(R.id.LcmEmuMain);
-		mLcmEmulatorView.setColRow(20, 4);
-		mLcmEmulatorView.clearScreen();
-		mLcmEmulatorView.writeStr(getIpAddressString());
-		mLcmEmulatorView.updateFullScreen();
 
-		
-		ss = new SocketServer(2400, mLcmEmulatorView);
-		// receiver = new BroadCastNetStatus();
+        mLcmEmulatorView = (LcmEmulatorView) findViewById(R.id.LcmEmuMain);
+        mLcmEmulatorView.setColRow(20, 4);
+        mLcmEmulatorView.setLcdPanelColor(getResources().getColor(R.color.LcdPanelColor));
+        mLcmEmulatorView.setNegetivePixelColor(getResources().getColor(R.color.NegetivePixelColor));
+        mLcmEmulatorView.setPostivePixelColor(getResources().getColor(R.color.PostivePixelColor));
+        mLcmEmulatorView.clearScreen();
+        mLcmEmulatorView.writeStr(getIpAddressString());
+        mLcmEmulatorView.updateFullScreen();
 
-		// IntentFilter filter = new IntentFilter();
-		// filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        ss = new SocketServer(2400, mLcmEmulatorView);
+        //savedInstanceState.putParcelable("mLcmEmulatorView", (Parcelable) mLcmEmulatorView);
+        //savedInstanceState.putParcelable("ss", (Parcelable) ss);
 
-		// registerReceiver(receiver, filter);
-	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
 
-	// onPause 方法中结束
-	@Override
-	protected void onPause() {
-		super.onPause();
-			//unregisterReceiver(receiver);
-		// Debug.stopMethodTracing();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-	}
-	public static String getIpAddressString() {
-		try {
-			for (Enumeration<NetworkInterface> enNetI = NetworkInterface
-					.getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
-				NetworkInterface netI = enNetI.nextElement();
-				for (Enumeration<InetAddress> enumIpAddr = netI
-						.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-					InetAddress inetAddress = enumIpAddr.nextElement();
-					if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
-						return inetAddress.getHostAddress();
-					}
-				}
-			}
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
+    // onPause 方法中结束
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("LCDEM", "onPause...");
+        ss.Close();
 
-	public class BroadCastNetStatus extends BroadcastReceiver {
-		State wifiState = null;
-		State mobileState = null;
+    }
 
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
-			// 获取手机的连接服务管理器，这里是连接管理器类
-			ConnectivityManager cm = (ConnectivityManager) context
-					.getSystemService(Context.CONNECTIVITY_SERVICE);
-			wifiState = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-					.getState();
-			//mobileState = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
-			//		.getState();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("LCDEM", "onResume...");
+        ss = new SocketServer(2400, mLcmEmulatorView);
+    }
 
-			if (wifiState != null && mobileState != null
-					&& State.CONNECTED != wifiState
-					&& State.CONNECTED == mobileState) {
-				Toast.makeText(context, "手机网络连接成功！", Toast.LENGTH_SHORT).show();
-			} else if (wifiState != null && mobileState != null
-					&& State.CONNECTED == wifiState
-					&& State.CONNECTED != mobileState) {
-				Toast.makeText(context, "无线网络连接成功！", Toast.LENGTH_SHORT).show();
-			} else if (wifiState != null && mobileState != null
-					&& State.CONNECTED != wifiState
-					&& State.CONNECTED != mobileState) {
-				Toast.makeText(context, "手机没有任何网络...", Toast.LENGTH_SHORT)
-						.show();
-			}
-		}
+    public static String getIpAddressString() {
+        try {
+            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
+                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
+                NetworkInterface netI = enNetI.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = netI
+                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 
-	}
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="NegetivePixelColor">#2B2B2B</color>
-    <color name="PostivePixelColor">#FFA113</color>
+    <color name="PostivePixelColor">#00D5AA</color>
     <color name="LcdPanelColor">#101010</color>
 </resources>

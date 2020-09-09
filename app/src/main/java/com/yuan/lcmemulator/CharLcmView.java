@@ -85,7 +85,12 @@ public class CharLcmView extends View {
     }
 
     public void setText(String mText) {
+        setCursor(0,0);
         this.mText = mText;
+        char[] chars = mText.toCharArray();
+        System.arraycopy(chars, 0, mLcmChars, 0,
+                chars.length <= mLcmChars.length ? chars.length : mLcmChars.length);
+        forceReDraw();
     }
 
     private String mText;
@@ -182,6 +187,7 @@ public class CharLcmView extends View {
         }
         mCursorX = 0;
         mCursorY = 0;
+        forceReDraw();
     }
 
     public void setCursor(int x, int y) {
@@ -212,7 +218,8 @@ public class CharLcmView extends View {
     public void setColRow(int col, int row) {
         mColNum = col;
         mRowNum = row;
-        // reGenResoures();
+        reGenResoures();
+        forceReDraw();
     }
 
     public void getColRow(int col, int row) {
@@ -223,8 +230,15 @@ public class CharLcmView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        mSurfaceHeight = h;
-        mSurfaceWidth = w;
+        int paddingLeft = getPaddingLeft();
+        int paddingTop = getPaddingTop();
+        int paddingRight = getPaddingRight();
+        int paddingBottom = getPaddingBottom();
+
+        int contentWidth = getWidth() - paddingLeft - paddingRight;
+        int contentHeight = getHeight() - paddingTop - paddingBottom;
+        mSurfaceHeight = contentHeight;
+        mSurfaceWidth = contentWidth;
         reGenResoures();
     }
 
@@ -249,6 +263,7 @@ public class CharLcmView extends View {
         MirrorLcmChars = Arrays.copyOf(mLcmChars, mLcmChars.length);
         // Log.i(TAG, "Draw full screen.");
         canvas.drawColor(mLcdPanelColor);
+        canvas.translate(paddingLeft,paddingTop);
         int dy = 0;
         PointF postion = new PointF();
         if (mFontCalc != null) {

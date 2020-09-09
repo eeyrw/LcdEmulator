@@ -13,18 +13,30 @@ import android.util.Log;
 public class SocketServer {
     private CharLcmView mLcmEmView;
     private ServerSocket server;
+
+    public boolean isRunListen() {
+        return mRunListen;
+    }
+
+    public void setRunListen(boolean mRunListen) {
+        this.mRunListen = mRunListen;
+    }
+
     // MyHandler myHandler;
+    private boolean mRunListen;
 
     public SocketServer(final int port, CharLcmView lcmEmView) {
 
         mLcmEmView = lcmEmView;
-        // myHandler = new MyHandler();
+        mRunListen = true;
         new Thread(new Runnable() {
             public void run() {
                 try {
                     server = new ServerSocket(port);
-                    beginListen();
+                    while (mRunListen)
+                        beginListen();
                 } catch (IOException e) {
+                    Close();
                     e.printStackTrace();
                 }
             }
@@ -66,30 +78,30 @@ public class SocketServer {
 //    }
     public void beginListen() {
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Log.d("LCDEM", "Start listening...");
-                    Socket socket = server.accept();
-                    socket.setTcpNoDelay(true);
-                    Log.d("LCDEM", "Socket accepted.");
+        // new Thread(new Runnable() {
+        //     public void run() {
+        try {
+            Log.d("LCDEM", "Start listening...");
+            Socket socket = server.accept();
+            socket.setTcpNoDelay(true);
+            Log.d("LCDEM", "Socket accepted.");
 
-                    InputStream input = socket.getInputStream();
-                    ReceiveFifo fifo = new ReceiveFifo(input);
-                    ProtocolProcessor protocolProcessor = new ProtocolProcessor(mLcmEmView);
-                    FrameProcessor frameProcessor = new FrameProcessor(protocolProcessor, fifo);
-                    while (!socket.isClosed()) {
-                        if (input != null) {
-                            frameProcessor.ParseEventFrameStream();
-                        }
-                    }
-                    socket.close();
-                    Log.d("LCDEM", "Socket closed.");
-                } catch (IOException e) {
-                    e.printStackTrace();
+            InputStream input = socket.getInputStream();
+            ReceiveFifo fifo = new ReceiveFifo(input);
+            ProtocolProcessor protocolProcessor = new ProtocolProcessor(mLcmEmView);
+            FrameProcessor frameProcessor = new FrameProcessor(protocolProcessor, fifo);
+            while ((!socket.isClosed()) && mRunListen) {
+                if (input != null) {
+                    frameProcessor.ParseEventFrameStream();
                 }
             }
-        }).start();
+            socket.close();
+            Log.d("LCDEM", "Socket closed.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // }
+        // }).start();
 
     }
 }

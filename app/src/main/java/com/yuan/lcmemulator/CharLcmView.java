@@ -384,8 +384,8 @@ public class CharLcmView extends View {
         private double mUnitWidth;
         private double mUnitHeight;
 
-        private double mCharWidthOffest;
-        private double mCharHeightOffest;
+        private double mCharWidthOffset;
+        private double mCharHeightOffset;
 
         private Bitmap[] mFontBitmapMain;
         private Bitmap[] mFontBitmapCustom;
@@ -434,13 +434,14 @@ public class CharLcmView extends View {
             genMainFontBitmap(mUnitWidth, mUnitHeight);
             genCustomFontBitmap(mCustomFontRawData, mUnitWidth, mUnitHeight);
 
-            mCharWidthOffest = mUnitWidth
+            mCharWidthOffset = mUnitWidth
                     * (mPixelWeight * mPixelsPerRow + mPixelSpaceWeight
                     * (mPixelsPerRow - 1) + mCharSpaceWeight);
-            mCharHeightOffest = mUnitHeight
+            mCharHeightOffset = mUnitHeight
                     * (mPixelWeight * mPixelsPerCol + mPixelSpaceWeight
                     * (mPixelsPerCol - 1) + mCharSpaceWeight * 2);
         }
+
 
         public Bitmap genSingleCustomFontBitmap(byte[] raw, double unitWidth,
                                                 double unitHeight) {
@@ -569,9 +570,9 @@ public class CharLcmView extends View {
 
         public void getActualCursor(Point cursor, PointF actualCursor) {
 
-            actualCursor.x = (float) (mMarginWeight * mUnitWidth + mCharWidthOffest
+            actualCursor.x = (float) (mMarginWeight * mUnitWidth + mCharWidthOffset
                     * cursor.x);
-            actualCursor.y = (float) (mMarginWeight * mUnitHeight + mCharHeightOffest
+            actualCursor.y = (float) (mMarginWeight * mUnitHeight + mCharHeightOffset
                     * cursor.y);
         }
 

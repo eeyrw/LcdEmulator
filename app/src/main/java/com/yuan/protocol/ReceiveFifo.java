@@ -27,7 +27,8 @@ public class ReceiveFifo {
     }
 
     public int read(byte[] cmdBuf, byte cmdLen) throws IOException{
-        Objects.requireNonNull(cmdBuf);
+        if (cmdBuf == null)
+            throw new NullPointerException();
         int off = 0;
         if (off < 0 || cmdLen < 0 || cmdLen > cmdBuf.length - off)
             throw new IndexOutOfBoundsException();

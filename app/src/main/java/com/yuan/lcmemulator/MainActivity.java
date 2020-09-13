@@ -24,40 +24,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final View decorView = getWindow().getDecorView();
-        decorView.setOnSystemUiVisibilityChangeListener(
-                new View.OnSystemUiVisibilityChangeListener() {
-                    @Override
-                    public void onSystemUiVisibilityChange(int visibility) {
-                        int height = decorView.getHeight();
-                        Log.i("LCDEM", "Current height: " + height);
-                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            // TODO: The system bars are visible. Make any desired
-                            // adjustments to your UI, such as showing the action bar or
-                            // other navigational controls.
-                        } else {
-                            // TODO: The system bars are NOT visible. Make any desired
-                            // adjustments to your UI, such as hiding the action bar or
-                            // other navigational controls.
-                        }
-                    }
-                });
         setContentView(R.layout.activity_main);
         Log.d("LCDEM", "onCreate...");
 
-
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
         mCharLcdView.setColRow(20, 4);
-        //mCharLcdView.setLcdPanelColor(getResources().getColor(R.color.LcdPanelColor));
-        //mCharLcdView.setNegetivePixelColor(getResources().getColor(R.color.NegetivePixelColor));
-        //mCharLcdView.setPostivePixelColor(getResources().getColor(R.color.PostivePixelColor));
-        //mCharLcdView.clearScreen();
         mCharLcdView.writeStr(getIpAddressString());
-        //mCharLcdView.updateFullScreen();
 
         ss = new SocketServer(2400, mCharLcdView);
-        //savedInstanceState.putParcelable("mLcmEmulatorView", (Parcelable) mLcmEmulatorView);
-        //savedInstanceState.putParcelable("ss", (Parcelable) ss);
         toggleHideyBar();
     }
 
@@ -67,6 +41,50 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    public static String getIpAddressString() {
+        try {
+            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
+                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
+                NetworkInterface netI = enNetI.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = netI
+                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress())
+                        return inetAddress.getHostAddress();
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    // onPause 方法中结束
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("LCDEM", "onPause...");
+        ss.setRunListen(false);
+        ss.Close();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("LCDEM", "onStop...");
+        ss.setRunListen(false);
+        ss.Close();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("LCDEM", "onResume...");
+        ss.setRunListen(true);
+        ss = new SocketServer(2400, mCharLcdView);
     }
 
     public void toggleHideyBar() {
@@ -92,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
 
+
         // Status bar hiding: Backwards compatible to Jellybean
         if (Build.VERSION.SDK_INT >= 16) {
             newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -111,52 +130,6 @@ public class MainActivity extends AppCompatActivity {
 
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
         //END_INCLUDE (set_ui_flags)
-    }
-
-    // onPause 方法中结束
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("LCDEM", "onPause...");
-        ss.setRunListen(false);
-        ss.Close();
-
-    }
-
-    @Override
-    protected void onStop()
-    {
-        super.onStop();
-        Log.d("LCDEM", "onStop...");
-        ss.setRunListen(false);
-        ss.Close();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("LCDEM", "onResume...");
-        ss.setRunListen(true);
-        ss = new SocketServer(2400, mCharLcdView);
-    }
-
-    public static String getIpAddressString() {
-        try {
-            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
-                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
-                NetworkInterface netI = enNetI.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = netI
-                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 
 

@@ -5,6 +5,18 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionBarStyle">@style/MyActionBarStyle</item>
+    </style>
+
+    <!-- ActionBar 样式 -->
+    <style name="MyActionBarStyle" parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="titleTextStyle">@style/CustomActionBarTitle</item>
+    </style>
+
+    <!-- ActionBar title 的样式 -->
+    <style name="CustomActionBarTitle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <!-- <item name="android:textColor">@color/white_text</item> -->
+        <item name="android:textSize">25sp</item>
     </style>
 
 </resources>

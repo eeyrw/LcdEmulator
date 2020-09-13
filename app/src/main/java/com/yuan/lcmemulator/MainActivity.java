@@ -4,7 +4,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean switcher = false;
     private CharLcmView mCharLcdView;
-    private SocketServer ss;
+    private SocketServer socketServer;
     private final String TAG = "LCDEM";
 
     @Override
@@ -31,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         mCharLcdView.setColRow(20, 4);
         mCharLcdView.writeStr(getIpAddressString());
 
-        ss = new SocketServer(2400, mCharLcdView);
+        socketServer = new SocketServer(2400, mCharLcdView);
         toggleHideyBar();
     }
 
@@ -66,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.d("LCDEM", "onPause...");
-        ss.setRunListen(false);
-        ss.Close();
+        socketServer.setRunListen(false);
+        socketServer.Close();
 
     }
 
@@ -75,21 +78,44 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.d("LCDEM", "onStop...");
-        ss.setRunListen(false);
-        ss.Close();
+        socketServer.setRunListen(false);
+        socketServer.Close();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d("LCDEM", "onResume...");
-        ss.setRunListen(true);
-        ss = new SocketServer(2400, mCharLcdView);
+        socketServer.setRunListen(true);
+        socketServer = new SocketServer(2400, mCharLcdView);
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            // midiPlayer.mEngine.noteOn(45);
+            toggleHideyBar();
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            // noteOn(mEngineHandle, false);
+        }
+        return super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Toast.makeText(this, "你点击了“设置”按键！", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void toggleHideyBar() {
         //getActionBar().hide();
-
+        // getSupportActionBar().hide();
         // BEGIN_INCLUDE (get_current_ui_flags)
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
@@ -107,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Navigation bar hiding:  Backwards compatible to ICS.
         if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+            newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN);
         }
 
 

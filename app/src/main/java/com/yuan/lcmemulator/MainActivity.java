@@ -1,23 +1,20 @@
 package com.yuan.lcmemulator;
 
-import java.io.IOException;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import android.app.ActionBar;
-import android.os.Build;
-import android.os.Bundle;
-import android.app.Activity;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private boolean switcher = false;
     private CharLcmView mCharLcdView;

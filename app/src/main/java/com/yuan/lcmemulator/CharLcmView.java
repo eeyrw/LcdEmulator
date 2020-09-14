@@ -230,6 +230,7 @@ public class CharLcmView extends View {
         int contentHeight = getHeight() - paddingTop - paddingBottom;
         mSurfaceHeight = contentHeight;
         mSurfaceWidth = contentWidth;
+        Log.d(TAG, String.format("LCM SIZE CHANGE: h:%d,w:%d", contentHeight, contentWidth));
         reGenResoures();
     }
 

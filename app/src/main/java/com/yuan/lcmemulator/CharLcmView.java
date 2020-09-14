@@ -4,13 +4,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -22,15 +20,8 @@ import java.util.Arrays;
  * TODO: document your custom view class.
  */
 public class CharLcmView extends View {
-    private String mExampleString; // TODO: use a default from R.string...
-    private int mExampleColor = Color.RED; // TODO: use a default from R.color...
     private float mExampleDimension = 0; // TODO: use a default from R.dimen...
     private Drawable mExampleDrawable;
-
-    private TextPaint mTextPaint;
-    private float mTextWidth;
-    private float mTextHeight;
-
 
     private String TAG = "LCDEM";
 
@@ -392,7 +383,7 @@ public class CharLcmView extends View {
 
         private byte[] mCustomFontRawData;
 
-        private static final double mPixelSpaceWeight = 1;
+        private static final double mPixelSpaceWeight = 1.3;
         private static final double mPixelWeight = 5;
         private static final double mCharSpaceWeight = 5;
         private static final double mMarginWeight = 12;

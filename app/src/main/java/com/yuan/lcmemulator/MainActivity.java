@@ -1,13 +1,15 @@
 package com.yuan.lcmemulator;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,26 +19,14 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener {
 
     private boolean switcher = false;
     private CharLcmView mCharLcdView;
     private SocketServer socketServer;
     private final String TAG = "LCDEM";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d("LCDEM", "onCreate...");
-
-        mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
-        mCharLcdView.setColRow(20, 4);
-        mCharLcdView.writeStr(getIpAddressString());
-
-        socketServer = new SocketServer(2400, mCharLcdView);
-        toggleHideyBar();
-    }
+    private static final int FLING_MIN_DISTANCE = 50;
+    private static final int FLING_MIN_VELOCITY = 0;
 
 
     @Override
@@ -82,23 +72,121 @@ public class MainActivity extends AppCompatActivity {
         socketServer.Close();
     }
 
+    private GestureDetector detector;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d("LCDEM", "onCreate...");
+
+        mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
+        mCharLcdView.setColRow(20, 4);
+        mCharLcdView.writeStr(getIpAddressString());
+
+        socketServer = new SocketServer(2400, mCharLcdView);
+        detector = new GestureDetector(this, this);
+        intoFullScreen();
+
+        if (Build.VERSION.SDK_INT < 16) {
+            final View decorView = getWindow().getDecorView();
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                        exitFullScreen();
+                    }
+                }
+            });
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         Log.d("LCDEM", "onResume...");
-        socketServer.setRunListen(true);
-        socketServer = new SocketServer(2400, mCharLcdView);
+        if (socketServer == null || socketServer.isRunListen() == false) {
+            socketServer = new SocketServer(2400, mCharLcdView);
+            socketServer.setRunListen(true);
+        }
+
     }
 
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (e1.getY() - e2.getY() > FLING_MIN_DISTANCE
+                && Math.abs(velocityY) > FLING_MIN_VELOCITY) {
+            Log.d(TAG, "UP");
+            intoFullScreen();
+            // Fling left
+        } else if (e2.getY() - e1.getY() > FLING_MIN_DISTANCE
+                && Math.abs(velocityY) > FLING_MIN_VELOCITY) {
+            Log.d(TAG, "DOWN");
+            exitFullScreen();
+        }
+        return false;
+    }
+
+    private void exitFullScreen() {
+        if (Build.VERSION.SDK_INT < 16) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+        getSupportActionBar().show();
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+    }
+
+    private void intoFullScreen() {
+        if (Build.VERSION.SDK_INT < 16) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+        getSupportActionBar().hide();
+
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             // midiPlayer.mEngine.noteOn(45);
-            toggleHideyBar();
+            //toggleHideyBar();
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            // noteOn(mEngineHandle, false);
         }
+        detector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
 
@@ -106,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Toast.makeText(this, "你点击了“设置”按键！", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivityForResult(intent, 0);//此处的requestCode应与下面结果处理函中调用的requestCode一致
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -115,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void toggleHideyBar() {
         //getActionBar().hide();
-        // getSupportActionBar().hide();
+        getSupportActionBar().hide();
         // BEGIN_INCLUDE (get_current_ui_flags)
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
@@ -133,9 +222,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Navigation bar hiding:  Backwards compatible to ICS.
         if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN);
+            newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
-
 
         // Status bar hiding: Backwards compatible to Jellybean
         if (Build.VERSION.SDK_INT >= 16) {

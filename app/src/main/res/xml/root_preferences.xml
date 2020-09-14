@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory app:title="@string/messages_header">
 
@@ -31,5 +32,13 @@
             app:title="@string/attachment_title" />
 
     </PreferenceCategory>
+    <EditTextPreference
+        android:defaultValue="false"
+        android:dialogIcon="@drawable/ic_launcher"
+        android:key="edit_text_preference_1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Edit text preference"
+        app:defaultValue="很尴尬" />
 
 </PreferenceScreen>

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LcmEmulator</string>
-    <string name="appbar_title">Character LCD Module Emulator</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="app_name">字符屏幕模拟器</string>
+    <string name="appbar_title">字符屏幕模拟器</string>
+    <string name="action_settings">设置</string>
+    <string name="title_activity_settings">设置</string>
 
     <!-- Preference Titles -->
-    <string name="network_settings_header">Network</string>
+    <string name="network_settings_header">Messages</string>
     <string name="sync_header">Sync</string>
 
     <!-- Messages Preferences -->
-    <string name="portnum_title">Port Number</string>
+    <string name="portnum_title">端口号</string>
     <string name="reply_title">Default reply action</string>
 
     <!-- Sync Preferences -->

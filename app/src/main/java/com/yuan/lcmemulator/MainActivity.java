@@ -1,6 +1,7 @@
 package com.yuan.lcmemulator;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
     private boolean switcher = false;
     private CharLcmView mCharLcdView;
-    private SocketServer socketServer;
+    private TcpServer tcpServer;
     private final String TAG = "LCDEM";
     private static final int FLING_MIN_DISTANCE = 50;
     private static final int FLING_MIN_VELOCITY = 0;
@@ -59,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     protected void onPause() {
         super.onPause();
         Log.d("LCDEM", "onPause...");
-        socketServer.setRunListen(false);
-        socketServer.Close();
+        tcpServer.setRunListen(false);
+        tcpServer.Close();
 
     }
 
@@ -68,8 +69,8 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     protected void onStop() {
         super.onStop();
         Log.d("LCDEM", "onStop...");
-        socketServer.setRunListen(false);
-        socketServer.Close();
+        tcpServer.setRunListen(false);
+        tcpServer.Close();
     }
 
     private GestureDetector detector;
@@ -79,12 +80,23 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d("LCDEM", "onCreate...");
+        setTitle(R.string.appbar_title);
+
+
+        // Define ColorDrawable object and parse color
+        // using parseColor method
+        // with color hash code as its parameter
+        ColorDrawable colorDrawable
+                = new ColorDrawable(getResources().getColor(R.color.PostivePixelColor));
+
+        // Set BackgroundDrawable
+        getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
         mCharLcdView.setColRow(20, 4);
         mCharLcdView.writeStr(getIpAddressString());
 
-        socketServer = new SocketServer(2400, mCharLcdView);
+        tcpServer = new TcpServer(2400, mCharLcdView);
         detector = new GestureDetector(this, this);
         intoFullScreen();
 
@@ -105,9 +117,9 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     protected void onResume() {
         super.onResume();
         Log.d("LCDEM", "onResume...");
-        if (socketServer == null || socketServer.isRunListen() == false) {
-            socketServer = new SocketServer(2400, mCharLcdView);
-            socketServer.setRunListen(true);
+        if (tcpServer == null || tcpServer.isRunListen() == false) {
+            tcpServer = new TcpServer(2400, mCharLcdView);
+            tcpServer.setRunListen(true);
         }
 
     }

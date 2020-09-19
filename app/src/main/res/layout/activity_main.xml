@@ -23,6 +23,6 @@
         app:lcdPanelColor="@color/LcdPanelColor"
         app:negativePixelColor="@color/NegetivePixelColor"
         app:positivePixelColor="@color/PostivePixelColor"
-        app:text="dxfgfdgdg" />
+        app:text="" />
 
 </LinearLayout>

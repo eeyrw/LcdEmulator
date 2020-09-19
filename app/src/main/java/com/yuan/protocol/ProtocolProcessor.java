@@ -1,11 +1,11 @@
 package com.yuan.protocol;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import android.util.Log;
 
 import com.yuan.lcmemulator.CharLcmView;
 
-import android.util.Log;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 public class ProtocolProcessor {
 
@@ -82,10 +82,10 @@ public class ProtocolProcessor {
                     byte x = font[i];
                     byte b = 0;
 
-                    while (x != 0) {
-                        b <<= 1;
-                        b |= (x & 1);
-                        x >>= 1;
+                    for (int bit = 4; bit >= 0; bit--) {
+                        if ((x & 1 << bit) != 0)
+                            b |= 1 << (4 - bit);
+
                     }
                     font[i] = b;
                 }

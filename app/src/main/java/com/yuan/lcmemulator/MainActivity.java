@@ -1,7 +1,6 @@
 package com.yuan.lcmemulator;
 
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -81,16 +80,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         setContentView(R.layout.activity_main);
         Log.d("LCDEM", "onCreate...");
         setTitle(R.string.appbar_title);
-
-
-        // Define ColorDrawable object and parse color
-        // using parseColor method
-        // with color hash code as its parameter
-        ColorDrawable colorDrawable
-                = new ColorDrawable(getResources().getColor(R.color.PostivePixelColor));
-
-        // Set BackgroundDrawable
-        getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
         mCharLcdView.setColRow(20, 4);

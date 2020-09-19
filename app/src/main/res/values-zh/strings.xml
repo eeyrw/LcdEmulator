@@ -6,7 +6,7 @@
     <string name="title_activity_settings">设置</string>
 
     <!-- Preference Titles -->
-    <string name="network_settings_header">Messages</string>
+    <string name="network_settings_header">网络设置</string>
     <string name="sync_header">Sync</string>
 
     <!-- Messages Preferences -->

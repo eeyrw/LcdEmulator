@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -20,8 +19,6 @@ import java.util.Arrays;
  * TODO: document your custom view class.
  */
 public class CharLcmView extends View {
-    private float mExampleDimension = 0; // TODO: use a default from R.dimen...
-    private Drawable mExampleDrawable;
 
     private String TAG = "LCDEM";
 
@@ -71,12 +68,22 @@ public class CharLcmView extends View {
     // Font generation class instance
     private FontCalc mFontCalc;
 
+    private boolean mIsRoundRectPixel;
+
+    public boolean isRoundRectPixel() {
+        return mIsRoundRectPixel;
+    }
+
+    public void setRoundRectPixel(boolean mIsRoundRectPixel) {
+        this.mIsRoundRectPixel = mIsRoundRectPixel;
+    }
+
     public String getText() {
         return mText;
     }
 
     public void setText(String mText) {
-        setCursor(0,0);
+        setCursor(0, 0);
         this.mText = mText;
         char[] chars = mText.toCharArray();
         System.arraycopy(chars, 0, mLcmChars, 0,
@@ -120,6 +127,9 @@ public class CharLcmView extends View {
 
         mText = a.getString(R.styleable.CharLcmView_text);
 
+        if (mText == null)
+            mText = "Char LCM";
+
         a.recycle();
         // Size
         mSurfaceHeight = 100;
@@ -128,6 +138,7 @@ public class CharLcmView extends View {
         mCursorY = 0;
         mColNum = 40;
         mRowNum = 4;
+        mIsRoundRectPixel = true;
 
         //
         mCustomCharsRaw = new byte[8 * 8];
@@ -145,8 +156,8 @@ public class CharLcmView extends View {
                 chars.length <= mLcmChars.length ? chars.length : mLcmChars.length);
 
         reGenResoures();
-        // Update TextPaint and text measurements from attributes
         forceReDraw();
+        Log.d(TAG, "Char Lcm Init");
     }
 
     private void forceReDraw() {
@@ -155,19 +166,17 @@ public class CharLcmView extends View {
 
     public void writeStr(String str) {
 
-        Point postion = new Point(mCursorX, mCursorY);
         char[] chars = str.toCharArray();
         System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
                 chars.length);
         mCursorX += (mCursorX + mCursorY * mColNum + chars.length) % mColNum;
         forceReDraw();
-
     }
 
     public void setCustomFont(int index, byte[] rawdata) {
 
         System.arraycopy(rawdata, 0, mCustomCharsRaw, index * 8, rawdata.length);
-        reGenResoures();
+        mFontCalc.genCustomFontBitmapByIndex(index, rawdata);
         forceReDraw();
     }
 
@@ -470,7 +479,11 @@ public class CharLcmView extends View {
                         pixelPaint.setColor(mPositivePixelColor);
                     else
                         pixelPaint.setColor(mNegativePixelColor);
-                    canvas.drawRect(pixelRect, pixelPaint);
+
+                    if (mIsRoundRectPixel)
+                        canvas.drawRoundRect(pixelRect, (float) charPixelWidth * 0.3f, (float) charPixelWidth * 0.3f, pixelPaint);
+                    else
+                        canvas.drawRect(pixelRect, pixelPaint);
 
                 }
             }
@@ -513,7 +526,10 @@ public class CharLcmView extends View {
                         pixelPaint.setColor(mPositivePixelColor);
                     else
                         pixelPaint.setColor(mNegativePixelColor);
-                    canvas.drawRect(pixelRect, pixelPaint);
+                    if (mIsRoundRectPixel)
+                        canvas.drawRoundRect(pixelRect, (float) charPixelWidth * 0.3f, (float) charPixelWidth * 0.3f, pixelPaint);
+                    else
+                        canvas.drawRect(pixelRect, pixelPaint);
 
                 }
             }
@@ -531,7 +547,7 @@ public class CharLcmView extends View {
                 mFontBitmapMain[fontIndex] = genSingleFontBitmap(fontIndex,
                         unitWidth, unitHeight);
             }
-            Log.i(TAG, "Custom font generated.");
+            Log.i(TAG, "Main font generated.");
         }
 
         public void genCustomFontBitmap(byte[] allRawData, double unitWidth,
@@ -549,7 +565,15 @@ public class CharLcmView extends View {
                 mFontBitmapCustom[fontIndex] = genSingleCustomFontBitmap(temp,
                         unitWidth, unitHeight);
             }
-            Log.i(TAG, "Main font generated.");
+            Log.i(TAG, "Custom font generated.");
+        }
+
+        public void genCustomFontBitmapByIndex(int fontIndex, byte[] singleFontData) {
+            if (mFontBitmapCustom == null)
+                genCustomFontBitmap(mCustomFontRawData, mUnitWidth, mUnitHeight);
+            mFontBitmapCustom[fontIndex] = genSingleCustomFontBitmap(singleFontData,
+                    mUnitWidth, mUnitHeight);
+            Log.i(TAG, "Single custom font generated.");
         }
 
         public void setColRowSize(Point size) {

@@ -393,7 +393,8 @@ public class CharLcmView extends View {
 
         private byte[] mCustomFontRawData;
 
-        private static final double mPixelSpaceWeight = 1.3;
+        private static final double mPixelHorizontalSpaceWeight = 1.3;
+        private static final double mPixelVerticalSpaceWeight = 1.3;
         private static final double mPixelWeight = 5;
         private static final double mCharSpaceWeight = 5;
         private static final double mMarginWeight = 12;
@@ -413,20 +414,20 @@ public class CharLcmView extends View {
 
             double surfaceWidth = areaSize.x;
             double surfaceHeight = areaSize.y;
-            // mMarginWeight*2+colNum*(mPixelWeight*mPixelsPerRow+mPixelSpaceWeight*(mPixelsPerRow-1))+(colNum-1)*mCharSpaceWeight
+            // mMarginWeight*2+colNum*(mPixelWeight*mPixelsPerRow+mPixelHorizontalSpaceWeight*(mPixelsPerRow-1))+(colNum-1)*mCharSpaceWeight
             mUnitWidth = surfaceWidth
                     / (mMarginWeight
                     * 2
                     + colNum
-                    * (mPixelWeight * mPixelsPerRow + mPixelSpaceWeight
+                    * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
                     * (mPixelsPerRow - 1)) + (colNum - 1)
                     * mCharSpaceWeight);
-            // mMarginWeight*2+rowNum*(mPixelWeight*mPixelsPerCol+mPixelSpaceWeight*(mPixelsPerCol-1))+(rowNum-1)*2*mCharSpaceWeight
+            // mMarginWeight*2+rowNum*(mPixelWeight*mPixelsPerCol+mPixelVerticalSpaceWeight*(mPixelsPerCol-1))+(rowNum-1)*2*mCharSpaceWeight
             mUnitHeight = surfaceHeight
                     / (mMarginWeight
                     * 2
                     + rowNum
-                    * (mPixelWeight * mPixelsPerCol + mPixelSpaceWeight
+                    * (mPixelWeight * mPixelsPerCol + mPixelVerticalSpaceWeight
                     * (mPixelsPerCol - 1)) + (rowNum - 1) * 2
                     * mCharSpaceWeight);
 
@@ -436,10 +437,10 @@ public class CharLcmView extends View {
             genCustomFontBitmap(mCustomFontRawData, mUnitWidth, mUnitHeight);
 
             mCharWidthOffset = mUnitWidth
-                    * (mPixelWeight * mPixelsPerRow + mPixelSpaceWeight
+                    * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
                     * (mPixelsPerRow - 1) + mCharSpaceWeight);
             mCharHeightOffset = mUnitHeight
-                    * (mPixelWeight * mPixelsPerCol + mPixelSpaceWeight
+                    * (mPixelWeight * mPixelsPerCol + mPixelVerticalSpaceWeight
                     * (mPixelsPerCol - 1) + mCharSpaceWeight * 2);
         }
 
@@ -447,10 +448,10 @@ public class CharLcmView extends View {
         public Bitmap genSingleCustomFontBitmap(byte[] raw, double unitWidth,
                                                 double unitHeight) {
 
-            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelSpaceWeight
+            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
                     * (mPixelsPerRow - 1)));
             int bitmapHeight = (int) (unitHeight * (mPixelWeight
-                    * mPixelsPerCol + mPixelSpaceWeight * (mPixelsPerCol - 1)));
+                    * mPixelsPerCol + mPixelVerticalSpaceWeight * (mPixelsPerCol - 1)));
 
             Bitmap fontBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
                     Bitmap.Config.ARGB_8888);
@@ -466,9 +467,9 @@ public class CharLcmView extends View {
             for (int y = 0; y < mPixelsPerCol; ++y) {
                 for (int x = 0; x < mPixelsPerRow; ++x) {
 
-                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelSpaceWeight
+                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelHorizontalSpaceWeight
                             * mUnitWidth));
-                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelSpaceWeight
+                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelVerticalSpaceWeight
                             * mUnitHeight));
                     float pixelRectRight = (float) (pixelRectLeft + charPixelWidth);
                     float pixelRectBottom = (float) (pixelRectTop + charPixelHeight);
@@ -494,10 +495,10 @@ public class CharLcmView extends View {
         public Bitmap genSingleFontBitmap(int fontIndex, double unitWidth,
                                           double unitHeight) {
 
-            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelSpaceWeight
+            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
                     * (mPixelsPerRow - 1)));
             int bitmapHeight = (int) (unitHeight * (mPixelWeight
-                    * mPixelsPerCol + mPixelSpaceWeight * (mPixelsPerCol - 1)));
+                    * mPixelsPerCol + mPixelVerticalSpaceWeight * (mPixelsPerCol - 1)));
 
             Bitmap fontBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
                     Bitmap.Config.ARGB_8888);
@@ -513,9 +514,9 @@ public class CharLcmView extends View {
             for (int x = 0; x < mPixelsPerRow; ++x) {
                 for (int y = 0; y < mPixelsPerCol; ++y) {
 
-                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelSpaceWeight
+                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelHorizontalSpaceWeight
                             * mUnitWidth));
-                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelSpaceWeight
+                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelVerticalSpaceWeight
                             * mUnitHeight));
                     float pixelRectRight = (float) (pixelRectLeft + charPixelWidth);
                     float pixelRectBottom = (float) (pixelRectTop + charPixelHeight);

@@ -24,5 +24,4 @@
         app:negativePixelColor="@color/NegetivePixelColor"
         app:positivePixelColor="@color/PostivePixelColor"
         app:text="" />
-
 </LinearLayout>

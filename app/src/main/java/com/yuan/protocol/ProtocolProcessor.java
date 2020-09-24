@@ -4,7 +4,9 @@ import android.util.Log;
 
 import com.yuan.lcmemulator.CharLcmView;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.util.Arrays;
 
 public class ProtocolProcessor {
@@ -17,26 +19,29 @@ public class ProtocolProcessor {
     private static final int CMD_LCD_SETCURSOR = 0x06;
     private static final int CMD_LCD_CUSTOMCHAR = 0x07;
     private static final int CMD_LCD_WRITECMD = 0x08;
+    private static final int CMD_LCD_DE_INIT = 0x0B;
     private static final int CMD_ENTER_BOOT = 0x19;
 
     private static final String TAG = "LCDEM";
+    private final Socket mSocket;
 
     private CharLcmView mLcmEmView;
 
-    public ProtocolProcessor(CharLcmView mLcmEmView) {
+    public ProtocolProcessor(CharLcmView mLcmEmView, Socket socket) {
         this.mLcmEmView = mLcmEmView;
+        this.mSocket = socket;
     }
 
-    public void Process(byte[] Buf) {
+    public void Process(byte[] Buf) throws IOException {
 
         switch (Buf[0]) {
             case CMD_LCD_INIT:
-				Log.i(TAG, "CMD_LCD_INIT: " + Buf[1]+","+Buf[2]);
+                Log.i(TAG, "CMD_LCD_INIT: " + Buf[1] + "," + Buf[2]);
 
                 // lcd_init(Buf[1],Buf[2]);
-				mLcmEmView.setColRow(Buf[1],Buf[2]);
-				mLcmEmView.clearScreen();
-				mLcmEmView.reGenResoures();
+                mLcmEmView.setColRow(Buf[1], Buf[2]);
+                mLcmEmView.clearScreen();
+                mLcmEmView.reGenResoures();
 
                 break;
 
@@ -98,6 +103,10 @@ public class ProtocolProcessor {
                 break;
 
             case CMD_ENTER_BOOT:
+                break;
+            case CMD_LCD_DE_INIT:
+                mSocket.close();
+                break;
 
             default:
                 break;

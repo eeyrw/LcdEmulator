@@ -89,7 +89,7 @@ public class TcpServer {
 
             InputStream input = socket.getInputStream();
             ReceiveFifo fifo = new ReceiveFifo(input);
-            ProtocolProcessor protocolProcessor = new ProtocolProcessor(mLcmEmView);
+            ProtocolProcessor protocolProcessor = new ProtocolProcessor(mLcmEmView, socket);
             FrameProcessor frameProcessor = new FrameProcessor(protocolProcessor, fifo);
             while ((!socket.isClosed()) && mRunListen) {
                 if (input != null) {

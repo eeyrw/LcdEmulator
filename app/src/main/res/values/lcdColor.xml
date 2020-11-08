@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--    <color name="PostivePixelColor">#142280</color>-->
-    <!--    <color name="NegetivePixelColor">#769798</color>-->
-    <!--    <color name="LcdPanelColor">#7DA19C</color>-->
+    <!-- <color name="PostivePixelColor">#142280</color>
+     <color name="NegetivePixelColor">#769798</color>
+      <color name="LcdPanelColor">#7DA19C</color>-->
 
-    <!--<color name="PostivePixelColor">#FBC02D</color>
+    <!-- <color name="PostivePixelColor">#FBC02D</color>
     <color name="NegetivePixelColor">#103637</color>
     <color name="LcdPanelColor">#10302B</color>-->
 
-    <!--    <color name="PostivePixelColor">#48F9FF</color>
+    <!--  <color name="PostivePixelColor">#48F9FF</color>
         <color name="NegetivePixelColor">#636363</color>
         <color name="LcdPanelColor">#000000</color>-->
+
     <!--    <color name="PostivePixelColor">#3D0093</color>
         <color name="NegetivePixelColor">#DADADA</color>
         <color name="LcdPanelColor">#EAEAEA</color>-->
@@ -22,4 +23,8 @@
     <!--    <color name="PostivePixelColor">#FFFFFF</color>
         <color name="NegetivePixelColor">#3748B8</color>
         <color name="LcdPanelColor">#1F32AE</color>-->
+
+    <!--<color name="PostivePixelColor">#FF0000</color>
+  <color name="NegetivePixelColor">#DCDCDC</color>
+  <color name="LcdPanelColor">#EDEDED</color>-->
 </resources>

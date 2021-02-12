@@ -16,15 +16,15 @@
         <color name="NegetivePixelColor">#DADADA</color>
         <color name="LcdPanelColor">#EAEAEA</color>-->
 
-    <color name="PostivePixelColor">#C8FF00</color>
-    <color name="NegetivePixelColor">#505050</color>
-    <color name="LcdPanelColor">#000000</color>
+    <!--  <color name="PostivePixelColor">#C8FF00</color>
+   <color name="NegetivePixelColor">#505050</color>
+   <color name="LcdPanelColor">#000000</color>-->
 
     <!--    <color name="PostivePixelColor">#FFFFFF</color>
         <color name="NegetivePixelColor">#3748B8</color>
         <color name="LcdPanelColor">#1F32AE</color>-->
 
-    <!--<color name="PostivePixelColor">#FF0000</color>
-  <color name="NegetivePixelColor">#DCDCDC</color>
-  <color name="LcdPanelColor">#EDEDED</color>-->
+    <color name="PostivePixelColor">#FF0000</color>
+    <color name="NegetivePixelColor">#BBFFFD</color>
+    <color name="LcdPanelColor">#FBFBFB</color>
 </resources>

@@ -1,6 +1,7 @@
 package com.yuan.lcmemulator;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -74,15 +76,23 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
     private GestureDetector detector;
 
+    private void updateCharLcmSettings() {
+        if (mCharLcdView != null) {
+            mCharLcdView.setColRow(20, 4);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d("LCDEM", "onCreate...");
         setTitle(R.string.appbar_title);
+        updateCharLcmSettings();
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
-        mCharLcdView.setColRow(20, 4);
         mCharLcdView.writeStr(getIpAddressString());
 
         tcpServer = new TcpServer(2400, mCharLcdView);
@@ -111,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             tcpServer = new TcpServer(2400, mCharLcdView);
             tcpServer.setRunListen(true);
         }
+        updateCharLcmSettings();
 
     }
 

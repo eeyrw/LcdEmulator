@@ -28,6 +28,8 @@ public class CharLcmView extends View {
 
     public void setNegativePixelColor(int mNegativePixelColor) {
         this.mNegativePixelColor = mNegativePixelColor;
+        reGenResoures();
+        forceReDraw();
     }
 
     public int getPositivePixelColor() {
@@ -36,6 +38,8 @@ public class CharLcmView extends View {
 
     public void setPositivePixelColor(int mPositivePixelColor) {
         this.mPositivePixelColor = mPositivePixelColor;
+        reGenResoures();
+        forceReDraw();
     }
 
     public int getLcdPanelColor() {
@@ -44,6 +48,8 @@ public class CharLcmView extends View {
 
     public void setLcdPanelColor(int mLcdPanelColor) {
         this.mLcdPanelColor = mLcdPanelColor;
+        reGenResoures();
+        forceReDraw();
     }
 
     // Color
@@ -76,6 +82,8 @@ public class CharLcmView extends View {
 
     public void setRoundRectPixel(boolean mIsRoundRectPixel) {
         this.mIsRoundRectPixel = mIsRoundRectPixel;
+        reGenResoures();
+        forceReDraw();
     }
 
     public String getText() {
@@ -92,7 +100,6 @@ public class CharLcmView extends View {
     }
 
     private String mText;
-
 
     public CharLcmView(Context context) {
         super(context);
@@ -127,6 +134,10 @@ public class CharLcmView extends View {
 
         mText = a.getString(R.styleable.CharLcmView_text);
 
+        mIsRoundRectPixel = a.getBoolean(
+                R.styleable.CharLcmView_isRoundRectanglePixel,
+                mIsRoundRectPixel);
+
         if (mText == null)
             mText = "Char LCM";
 
@@ -138,7 +149,6 @@ public class CharLcmView extends View {
         mCursorY = 0;
         mColNum = 40;
         mRowNum = 4;
-        mIsRoundRectPixel = true;
 
         //
         mCustomCharsRaw = new byte[8 * 8];

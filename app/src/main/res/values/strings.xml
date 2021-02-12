@@ -7,16 +7,10 @@
 
     <!-- Preference Titles -->
     <string name="network_settings_header">Network</string>
-    <string name="sync_header">Sync</string>
+    <string name="ui_header">UI</string>
 
-    <!-- Messages Preferences -->
     <string name="portnum_title">Port Number</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="roundborder_title">Apply round border pixel</string>
 
     <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

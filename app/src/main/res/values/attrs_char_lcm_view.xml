@@ -4,5 +4,6 @@
         <attr name="negativePixelColor" format="color" />
         <attr name="positivePixelColor" format="color" />
         <attr name="lcdPanelColor" format="color" />
+        <attr name="isRoundRectanglePixel" format="boolean" />
     </declare-styleable>
 </resources>

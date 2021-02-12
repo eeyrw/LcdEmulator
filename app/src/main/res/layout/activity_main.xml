@@ -20,6 +20,7 @@
         android:layout_margin="0sp"
         android:paddingTop="10sp"
         android:paddingBottom="10sp"
+        app:isRoundRectanglePixel="false"
         app:lcdPanelColor="@color/LcdPanelColor"
         app:negativePixelColor="@color/NegetivePixelColor"
         app:positivePixelColor="@color/PostivePixelColor"

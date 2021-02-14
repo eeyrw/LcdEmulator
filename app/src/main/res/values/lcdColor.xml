@@ -24,7 +24,7 @@
         <color name="NegetivePixelColor">#3748B8</color>
         <color name="LcdPanelColor">#1F32AE</color>-->
 
-    <color name="PostivePixelColor">#FF0000</color>
-    <color name="NegetivePixelColor">#BBFFFD</color>
-    <color name="LcdPanelColor">#FBFBFB</color>
+    <color name="PostivePixelColor">#202020</color>
+    <color name="NegetivePixelColor">#22E9D9</color>
+    <color name="LcdPanelColor">#1ed7c7</color>
 </resources>

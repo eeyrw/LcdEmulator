@@ -17,4 +17,7 @@
     <string name="lcd_panel_color_title">液晶面板底色</string>
     <string name="positive_pixel_color_title">像素颜色</string>
     <string name="negative_pixel_color_title">像素底色</string>
+
+    <string name="wrong_format_portnum">端口号输入格式错误。</string>
+
 </resources>

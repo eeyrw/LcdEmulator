@@ -6,7 +6,7 @@
         app:title="@string/network_settings_header">
 
         <EditTextPreference
-            app:key="signature"
+            app:key="prefPortNumber"
             app:title="@string/portnum_title"
             app:defaultValue="2400"
             app:iconSpaceReserved="false"
@@ -22,19 +22,23 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="prefIsRoundBorderPixel"
-            android:title="@string/roundborder_title" />
+            android:title="@string/roundborder_title"
+            app:iconSpaceReserved="false" />
         <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
             android:defaultValue="@color/LcdPanelColor"
             android:key="prefLcdPanelColor"
-            android:title="@string/lcd_panel_color_title" />
+            android:title="@string/lcd_panel_color_title"
+            app:iconSpaceReserved="false" />
         <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
             android:defaultValue="@color/PostivePixelColor"
             android:key="prefPositivePixelColor"
-            android:title="@string/positive_pixel_color_title" />
+            android:title="@string/positive_pixel_color_title"
+            app:iconSpaceReserved="false" />
         <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
             android:defaultValue="@color/NegetivePixelColor"
             android:key="prefNegativePixelColor"
-            android:title="@string/negative_pixel_color_title" />
+            android:title="@string/negative_pixel_color_title"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
 

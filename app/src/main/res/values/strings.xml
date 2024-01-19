@@ -15,5 +15,7 @@
     <string name="positive_pixel_color_title">Postive pixel color</string>
     <string name="negative_pixel_color_title">Negative pixel color</string>
 
+    <string name="wrong_format_portnum">Wrong port number format.</string>
+
     <!-- Sync Preferences -->
 </resources>

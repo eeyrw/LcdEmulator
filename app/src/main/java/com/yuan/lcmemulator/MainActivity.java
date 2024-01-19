@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private boolean switcher = false;
     private CharLcmView mCharLcdView;
     private TcpServer tcpServer;
+    private int socketPort = 2400;
     private final String TAG = "LCDEM";
     private static final int FLING_MIN_DISTANCE = 50;
     private static final int FLING_MIN_VELOCITY = 0;
@@ -88,6 +90,15 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefNegativePixelColor", 0xffff0000);
             mCharLcdView.setNegativePixelColor(color);
         }
+        try {
+            socketPort = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("prefPortNumber", "2400"));
+        } catch (Exception e) {
+            Toast toast = Toast.makeText(this /* MyActivity */, R.string.wrong_format_portnum, Toast.LENGTH_LONG);
+            SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            prefs.putString("prefPortNumber", "2400");
+            prefs.apply();
+            toast.show();
+        }
     }
 
     @Override
@@ -102,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         mCharLcdView.writeStr(getIpAddressString());
 
 
-        tcpServer = new TcpServer(2400, mCharLcdView);
+        tcpServer = new TcpServer(socketPort, mCharLcdView);
         detector = new GestureDetector(this, this);
         intoFullScreen();
 
@@ -125,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         super.onResume();
         Log.d("LCDEM", "onResume...");
         if (tcpServer == null || tcpServer.isRunListen() == false) {
-            tcpServer = new TcpServer(2400, mCharLcdView);
+            tcpServer = new TcpServer(socketPort, mCharLcdView);
             tcpServer.setRunListen(true);
         }
         updateCharLcmSettings();

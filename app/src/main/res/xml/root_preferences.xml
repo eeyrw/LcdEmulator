@@ -23,19 +23,18 @@
             android:defaultValue="false"
             android:key="prefIsRoundBorderPixel"
             android:title="@string/roundborder_title" />
-        <com.rarepebble.colorpicker.ColorPreference
-            android:defaultValue="#009688"
+        <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
+            android:defaultValue="@color/LcdPanelColor"
             android:key="prefLcdPanelColor"
             android:title="@string/lcd_panel_color_title" />
-        <com.rarepebble.colorpicker.ColorPreference
-            android:defaultValue="#EDEDED"
+        <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
+            android:defaultValue="@color/PostivePixelColor"
             android:key="prefPositivePixelColor"
             android:title="@string/positive_pixel_color_title" />
-        <com.rarepebble.colorpicker.ColorPreference
-            android:defaultValue="#00655B"
+        <com.jaredrummler.android.colorpicker.ColorPreferenceCompat
+            android:defaultValue="@color/NegetivePixelColor"
             android:key="prefNegativePixelColor"
             android:title="@string/negative_pixel_color_title" />
-
     </PreferenceCategory>
 
 

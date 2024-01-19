@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.yuan.lcmemulator"
-        minSdkVersion 18
+        minSdkVersion 15
         targetSdkVersion 33
     }
 
@@ -22,6 +22,8 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.preference:preference:1.1.1'
+    //implementation 'androidx.preference:preference:1.1.1'
     implementation 'com.github.martin-stone:hsv-alpha-color-picker-android:3.1.0'
+    implementation 'com.jaredrummler:colorpicker:1.1.0'
+
 }

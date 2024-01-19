@@ -14,4 +14,7 @@
 
     <!-- Sync Preferences -->
     <string name="roundborder_title">使用圆角矩形像素</string>
+    <string name="lcd_panel_color_title">液晶面板底色</string>
+    <string name="positive_pixel_color_title">像素颜色</string>
+    <string name="negative_pixel_color_title">像素底色</string>
 </resources>

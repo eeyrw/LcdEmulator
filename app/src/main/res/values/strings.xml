@@ -11,6 +11,9 @@
 
     <string name="portnum_title">Port Number</string>
     <string name="roundborder_title">Apply round border pixel</string>
+    <string name="lcd_panel_color_title">LCD Background Colour</string>
+    <string name="positive_pixel_color_title">Postive pixel color</string>
+    <string name="negative_pixel_color_title">Negative pixel color</string>
 
     <!-- Sync Preferences -->
 </resources>

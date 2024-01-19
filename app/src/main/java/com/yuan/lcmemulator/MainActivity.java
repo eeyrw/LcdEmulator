@@ -81,6 +81,12 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             mCharLcdView.setColRow(20, 4);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
+            int color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefLcdPanelColor", 0xffff0000);
+            mCharLcdView.setLcdPanelColor(color);
+            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefPositivePixelColor", 0xffff0000);
+            mCharLcdView.setPositivePixelColor(color);
+            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefNegativePixelColor", 0xffff0000);
+            mCharLcdView.setNegativePixelColor(color);
         }
     }
 
@@ -94,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
         mCharLcdView.writeStr(getIpAddressString());
+
 
         tcpServer = new TcpServer(2400, mCharLcdView);
         detector = new GestureDetector(this, this);

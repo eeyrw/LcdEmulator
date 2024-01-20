@@ -3,7 +3,9 @@
     <string name="app_name">字符屏幕模拟器</string>
     <string name="appbar_title">字符屏幕模拟器</string>
     <string name="action_settings">设置</string>
+    <string name="action_about">关于</string>
     <string name="title_activity_settings">设置</string>
+    <string name="title_activity_about">关于</string>
 
     <!-- Preference Titles -->
     <string name="network_settings_header">网络设置</string>
@@ -19,5 +21,7 @@
     <string name="negative_pixel_color_title">像素底色</string>
 
     <string name="wrong_format_portnum">端口号输入格式错误。</string>
+
+    <string name="about_page_description">旧手机做PC的信息展示附屏。</string>
 
 </resources>

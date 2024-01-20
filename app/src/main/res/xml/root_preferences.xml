@@ -40,6 +40,4 @@
             android:title="@string/negative_pixel_color_title"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
-
-
 </PreferenceScreen>

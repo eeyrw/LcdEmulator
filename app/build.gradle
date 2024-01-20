@@ -35,5 +35,6 @@ android {
 dependencies {
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'com.jaredrummler:colorpicker:1.1.0'
+    implementation 'io.github.medyo:android-about-page:2.0.0'
 
 }

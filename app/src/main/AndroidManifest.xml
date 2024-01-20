@@ -22,6 +22,14 @@
                 android:value=".MainActivity" />
         </activity>
         <activity
+            android:name=".AboutPageActivity"
+            android:label="@string/title_activity_about"
+            android:screenOrientation="sensor">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity
             android:exported="true"
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

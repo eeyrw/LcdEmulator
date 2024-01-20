@@ -228,6 +228,10 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivityForResult(intent, 0);//此处的requestCode应与下面结果处理函中调用的requestCode一致
                 return true;
+            case R.id.action_about:
+                Intent intent2 = new Intent(MainActivity.this, AboutPageActivity.class);
+                startActivityForResult(intent2, 0);//此处的requestCode应与下面结果处理函中调用的requestCode一致
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -24,7 +24,7 @@ public class AboutPageActivity extends AppCompatActivity {
                 .isRTL(false)
                 .setImage(R.drawable.snaptshot)
                 .setDescription(getString(R.string.about_page_description))
-                .addItem(new Element().setTitle("Version 1.0"))
+                .addItem(new Element().setTitle("Version 1.1"))
                 .addWebsite("https://github.com/eeyrw/LcdEmulator")
                 .addItem(getCopyRightsElement())
                 .create();

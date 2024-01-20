@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import java.net.Inet4Address;
@@ -83,11 +84,11 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             mCharLcdView.setColRow(20, 4);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
-            int color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefLcdPanelColor", R.color.LcdPanelColor);
+            int color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefLcdPanelColor", ContextCompat.getColor(this, R.color.LcdPanelColor));
             mCharLcdView.setLcdPanelColor(color);
-            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefPositivePixelColor", R.color.PostivePixelColor);
+            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefPositivePixelColor", ContextCompat.getColor(this, R.color.PostivePixelColor));
             mCharLcdView.setPositivePixelColor(color);
-            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefNegativePixelColor", R.color.NegetivePixelColor);
+            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefNegativePixelColor", ContextCompat.getColor(this, R.color.NegetivePixelColor));
             mCharLcdView.setNegativePixelColor(color);
         }
         try {

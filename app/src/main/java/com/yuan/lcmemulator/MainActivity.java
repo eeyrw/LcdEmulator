@@ -111,7 +111,12 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         updateCharLcmSettings();
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
-        mCharLcdView.writeStr(getIpAddressString());
+        String ipString = getIpAddressString();
+        if (ipString == "") {
+            mCharLcdView.writeStr("Fail to get IP address.");
+        } else {
+            mCharLcdView.writeStr("IP:" + ipString);
+        }
 
 
         tcpServer = new TcpServer(socketPort, mCharLcdView);

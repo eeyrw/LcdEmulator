@@ -617,7 +617,11 @@ public class CharLcmView extends View {
                 charNum -= 32;
             } else if (charNum >= 0 && charNum <= 7) {
                 return mFontBitmapCustom[charNum];
+            } else if (charNum == 253) //remap to block char https://github.com/eeyrw/LcdEmulator/issues/1
+            {
+                charNum = 127 - 32;
             } else {
+                Log.d(TAG, String.format("Unknown ascii: %d", charNum));
                 charNum = 32;
             }
 

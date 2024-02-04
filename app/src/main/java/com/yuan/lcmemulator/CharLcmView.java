@@ -26,19 +26,15 @@ public class CharLcmView extends View {
         return mNegativePixelColor;
     }
 
-    public void setNegativePixelColor(int mNegativePixelColor) {
-        this.mNegativePixelColor = mNegativePixelColor;
-        reGenResoures();
-        forceReDraw();
-    }
+    private boolean mUsePoint2Point = true;
 
     public int getPositivePixelColor() {
         return mPositivePixelColor;
     }
 
-    public void setPositivePixelColor(int mPositivePixelColor) {
-        this.mPositivePixelColor = mPositivePixelColor;
-        reGenResoures();
+    public void setNegativePixelColor(int mNegativePixelColor) {
+        this.mNegativePixelColor = mNegativePixelColor;
+        reGenResources();
         forceReDraw();
     }
 
@@ -46,9 +42,9 @@ public class CharLcmView extends View {
         return mLcdPanelColor;
     }
 
-    public void setLcdPanelColor(int mLcdPanelColor) {
-        this.mLcdPanelColor = mLcdPanelColor;
-        reGenResoures();
+    public void setPositivePixelColor(int mPositivePixelColor) {
+        this.mPositivePixelColor = mPositivePixelColor;
+        reGenResources();
         forceReDraw();
     }
 
@@ -76,13 +72,25 @@ public class CharLcmView extends View {
 
     private boolean mIsRoundRectPixel;
 
+    public void setLcdPanelColor(int mLcdPanelColor) {
+        this.mLcdPanelColor = mLcdPanelColor;
+        reGenResources();
+        forceReDraw();
+    }
+
     public boolean isRoundRectPixel() {
         return mIsRoundRectPixel;
     }
 
     public void setRoundRectPixel(boolean mIsRoundRectPixel) {
         this.mIsRoundRectPixel = mIsRoundRectPixel;
-        reGenResoures();
+        reGenResources();
+        forceReDraw();
+    }
+
+    public void setUsePoint2PointRender(boolean mUsePoint2Point) {
+        this.mUsePoint2Point = mUsePoint2Point;
+        reGenResources();
         forceReDraw();
     }
 
@@ -95,7 +103,7 @@ public class CharLcmView extends View {
         this.mText = mText;
         char[] chars = mText.toCharArray();
         System.arraycopy(chars, 0, mLcmChars, 0,
-                chars.length <= mLcmChars.length ? chars.length : mLcmChars.length);
+                Math.min(chars.length, mLcmChars.length));
         forceReDraw();
     }
 
@@ -143,29 +151,27 @@ public class CharLcmView extends View {
 
         a.recycle();
         // Size
-        mSurfaceHeight = 100;
-        mSurfaceWidth = 50;
+        mSurfaceHeight = 360;
+        mSurfaceWidth = 640;
         mCursorX = 0;
         mCursorY = 0;
-        mColNum = 40;
-        mRowNum = 4;
+        mColNum = 20;
+        mRowNum = 6;
 
         //
         mCustomCharsRaw = new byte[8 * 8];
 
-        for (int i = 0; i < 8 * 8; i++) {
-            mCustomCharsRaw[i] = (char) 0x23; // 特殊图样
-        }
+        // 特殊图样
+        Arrays.fill(mCustomCharsRaw, (byte) (char) 0x23);
 
         mLcmChars = new char[mRowNum * mColNum];
-        for (int i = 0; i < mRowNum * mColNum; i++) {
-            mLcmChars[i] = ' '; // 空格字符
-        }
+        // 空格字符
+        Arrays.fill(mLcmChars, ' ');
         char[] chars = mText.toCharArray();
         System.arraycopy(chars, 0, mLcmChars, 0,
-                chars.length <= mLcmChars.length ? chars.length : mLcmChars.length);
+                Math.min(chars.length, mLcmChars.length));
 
-        reGenResoures();
+        reGenResources();
         forceReDraw();
         Log.d(TAG, "Char Lcm Init");
     }
@@ -177,8 +183,8 @@ public class CharLcmView extends View {
     public void writeStr(String str) {
 
         char[] chars = str.toCharArray();
-        System.arraycopy(chars, 0, mLcmChars, mCursorX + mCursorY * mColNum,
-                chars.length);
+        System.arraycopy(chars, 0, mLcmChars, Math.min(mCursorX + mCursorY * mColNum, mLcmChars.length - 1),
+                Math.min(Math.max(mLcmChars.length - (mCursorX + mCursorY * mColNum), 0), chars.length));
         mCursorX += (mCursorX + mCursorY * mColNum + chars.length) % mColNum;
         forceReDraw();
     }
@@ -191,10 +197,8 @@ public class CharLcmView extends View {
     }
 
     public void clearScreen() {
-
-        for (int i = 0; i < mRowNum * mColNum; i++) {
-            mLcmChars[i] = ' '; // 空格字符
-        }
+        // 空格字符
+        Arrays.fill(mLcmChars, ' ');
         mCursorX = 0;
         mCursorY = 0;
         forceReDraw();
@@ -220,15 +224,23 @@ public class CharLcmView extends View {
         cursor.y = mCursorY;
     }
 
-    public void reGenResoures() {
+    public void reGenResources() {
         mFontCalc = new FontCalc(new Point(mColNum, mRowNum), new Point(
                 mSurfaceWidth, mSurfaceHeight), mCustomCharsRaw);
     }
 
     public void setColRow(int col, int row) {
-        mColNum = col;
-        mRowNum = row;
-        reGenResoures();
+        if (col != mColNum || row != mRowNum) {
+            mColNum = col;
+            mRowNum = row;
+
+            char[] new_mLcmChars = new char[mColNum * mRowNum];
+            Arrays.fill(new_mLcmChars, ' ');
+            System.arraycopy(mLcmChars, 0, new_mLcmChars, 0,
+                    Math.min(mLcmChars.length, new_mLcmChars.length));
+            mLcmChars = new_mLcmChars;
+        }
+        reGenResources();
         forceReDraw();
     }
 
@@ -250,7 +262,7 @@ public class CharLcmView extends View {
         mSurfaceHeight = contentHeight;
         mSurfaceWidth = contentWidth;
         Log.d(TAG, String.format("LCM SIZE CHANGE: h:%d,w:%d", contentHeight, contentWidth));
-        reGenResoures();
+        reGenResources();
     }
 
     @Override
@@ -270,11 +282,17 @@ public class CharLcmView extends View {
         mSurfaceWidth = contentWidth;
 
 
-        char[] MirrorLcmChars = new char[mLcmChars.length];
-        MirrorLcmChars = Arrays.copyOf(mLcmChars, mLcmChars.length);
+        //char[] MirrorLcmChars = new char[mLcmChars.length];
+        //MirrorLcmChars = Arrays.copyOf(mLcmChars, mLcmChars.length);
         // Log.i(TAG, "Draw full screen.");
+        //Brush.horizontalGradient(listOf(Color.Red, Color.Blue))
+        int width = getWidth();
+        int height = getHeight();
+
+        Paint paint = new Paint();
         canvas.drawColor(mLcdPanelColor);
-        canvas.translate(paddingLeft,paddingTop);
+        //canvas.drawRect(0, 0, width, height, paint);
+        canvas.translate(paddingLeft, paddingTop);
         int dy = 0;
         PointF postion = new PointF();
         if (mFontCalc != null) {
@@ -282,7 +300,7 @@ public class CharLcmView extends View {
                 for (int x = 0; x < mColNum; x++) {
                     mFontCalc.getActualCursor(x, y, postion);// y*mColNum+x+32
                     canvas.drawBitmap(mFontCalc
-                                    .getCharBitmap(MirrorLcmChars[dy + x]),
+                                    .getCharBitmap(mLcmChars[Math.min(dy + x, mLcmChars.length - 1)]),
                             postion.x, postion.y, null);
                 }
                 dy += mColNum;
@@ -415,6 +433,16 @@ public class CharLcmView extends View {
         private static final int mBytesPerFont = 5;
 
         private Point mColRowSize;
+        private double mSingleCharWidth;
+        private double mSingleCharHeight;
+        private double mPixelWidth;
+        private double mPixelHeight;
+        private double mPixelSpaceWidth;
+        private double mPixelSpaceHeight;
+        private double mCharSpaceWidth;
+        private double mCharSpaceHeight;
+        private double mMarginWidth;
+        private double mMarginHeight;
 
         public FontCalc(Point colRowSize, Point areaSize,
                         byte[] customFontRawData) {
@@ -441,34 +469,53 @@ public class CharLcmView extends View {
                     * (mPixelsPerCol - 1)) + (rowNum - 1) * 2
                     * mCharSpaceWeight);
 
-            mCustomFontRawData = customFontRawData;
 
+            mPixelWidth = mUnitWidth * mPixelWeight;
+            mPixelHeight = mUnitHeight * mPixelWeight;
+
+            mPixelSpaceWidth = mUnitWidth * mPixelHorizontalSpaceWeight;
+            mPixelSpaceHeight = mUnitHeight * mPixelVerticalSpaceWeight;
+            mCharSpaceWidth = mUnitWidth * mCharSpaceWeight;
+            mCharSpaceHeight = mUnitHeight * mCharSpaceWeight;
+
+            mMarginWidth = mUnitWidth * mMarginWeight;
+            mMarginHeight = mUnitHeight * mMarginWeight;
+
+            if (mUsePoint2Point) {
+                mPixelWidth = Math.round(mPixelWidth);
+                mPixelHeight = Math.round(mPixelHeight);
+                mPixelSpaceWidth = Math.round(mPixelSpaceWidth);
+                mPixelSpaceHeight = Math.round(mPixelSpaceHeight);
+                mCharSpaceWidth = Math.round(mCharSpaceWidth);
+                mCharSpaceHeight = Math.round(mCharSpaceHeight);
+            }
+
+            mSingleCharWidth = mPixelWidth * mPixelsPerRow + mPixelSpaceWidth * (mPixelsPerRow - 1);
+            mSingleCharHeight = mPixelHeight * mPixelsPerCol + mPixelSpaceHeight * (mPixelsPerCol - 1);
+
+            mCharWidthOffset = mSingleCharWidth + mCharSpaceWidth;
+            mCharHeightOffset = mSingleCharHeight + mCharSpaceHeight * 2;
+
+            if (mUsePoint2Point) {
+                double contentWidth = mSingleCharWidth * colNum + mCharSpaceWidth * (colNum - 1);
+                double contentHeight = mSingleCharHeight * rowNum + mCharSpaceHeight * 2 * (rowNum - 1);
+                mMarginWidth = Math.round((mSurfaceWidth - contentWidth) / 2);
+                mMarginHeight = Math.round((mSurfaceHeight - contentHeight) / 2);
+
+            }
+
+            mCustomFontRawData = customFontRawData;
             genMainFontBitmap(mUnitWidth, mUnitHeight);
             genCustomFontBitmap(mCustomFontRawData, mUnitWidth, mUnitHeight);
-
-            mCharWidthOffset = mUnitWidth
-                    * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
-                    * (mPixelsPerRow - 1) + mCharSpaceWeight);
-            mCharHeightOffset = mUnitHeight
-                    * (mPixelWeight * mPixelsPerCol + mPixelVerticalSpaceWeight
-                    * (mPixelsPerCol - 1) + mCharSpaceWeight * 2);
         }
 
 
         public Bitmap genSingleCustomFontBitmap(byte[] raw, double unitWidth,
                                                 double unitHeight) {
-
-            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
-                    * (mPixelsPerRow - 1)));
-            int bitmapHeight = (int) (unitHeight * (mPixelWeight
-                    * mPixelsPerCol + mPixelVerticalSpaceWeight * (mPixelsPerCol - 1)));
-
-            Bitmap fontBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+            Bitmap fontBitmap = Bitmap.createBitmap((int) Math.round(mSingleCharWidth), (int) Math.round(mSingleCharHeight),
                     Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(fontBitmap);
-            double charPixelWidth = mUnitWidth * mPixelWeight;
-            double charPixelHeight = mUnitHeight * mPixelWeight;
-            canvas.drawColor(mLcdPanelColor);
+            //canvas.drawColor(mLcdPanelColor);
             Paint pixelPaint = new Paint();
 
             pixelPaint.setAntiAlias(true); // 反锯齿
@@ -477,12 +524,10 @@ public class CharLcmView extends View {
             for (int y = 0; y < mPixelsPerCol; ++y) {
                 for (int x = 0; x < mPixelsPerRow; ++x) {
 
-                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelHorizontalSpaceWeight
-                            * mUnitWidth));
-                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelVerticalSpaceWeight
-                            * mUnitHeight));
-                    float pixelRectRight = (float) (pixelRectLeft + charPixelWidth);
-                    float pixelRectBottom = (float) (pixelRectTop + charPixelHeight);
+                    float pixelRectLeft = (float) (x * Math.round(mPixelWidth + mPixelSpaceWidth));
+                    float pixelRectTop = (float) (y * Math.round(mPixelHeight + mPixelSpaceHeight));
+                    float pixelRectRight = (float) (pixelRectLeft + mPixelWidth);
+                    float pixelRectBottom = (float) (pixelRectTop + mPixelHeight);
 
                     RectF pixelRect = new RectF(pixelRectLeft, pixelRectTop,
                             pixelRectRight, pixelRectBottom);
@@ -492,7 +537,7 @@ public class CharLcmView extends View {
                         pixelPaint.setColor(mNegativePixelColor);
 
                     if (mIsRoundRectPixel)
-                        canvas.drawRoundRect(pixelRect, (float) charPixelWidth * 0.3f, (float) charPixelWidth * 0.3f, pixelPaint);
+                        canvas.drawRoundRect(pixelRect, (float) mPixelWidth * 0.3f, (float) mPixelHeight * 0.3f, pixelPaint);
                     else
                         canvas.drawRect(pixelRect, pixelPaint);
 
@@ -504,18 +549,10 @@ public class CharLcmView extends View {
 
         public Bitmap genSingleFontBitmap(int fontIndex, double unitWidth,
                                           double unitHeight) {
-
-            int bitmapWidth = (int) (unitWidth * (mPixelWeight * mPixelsPerRow + mPixelHorizontalSpaceWeight
-                    * (mPixelsPerRow - 1)));
-            int bitmapHeight = (int) (unitHeight * (mPixelWeight
-                    * mPixelsPerCol + mPixelVerticalSpaceWeight * (mPixelsPerCol - 1)));
-
-            Bitmap fontBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+            Bitmap fontBitmap = Bitmap.createBitmap((int) Math.round(mSingleCharWidth), (int) Math.round(mSingleCharHeight),
                     Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(fontBitmap);
-            double charPixelWidth = mUnitWidth * mPixelWeight;
-            double charPixelHeight = mUnitHeight * mPixelWeight;
-            canvas.drawColor(mLcdPanelColor);
+            //canvas.drawColor(mLcdPanelColor);
             Paint pixelPaint = new Paint();
 
             pixelPaint.setAntiAlias(true); // 反锯齿
@@ -524,12 +561,10 @@ public class CharLcmView extends View {
             for (int x = 0; x < mPixelsPerRow; ++x) {
                 for (int y = 0; y < mPixelsPerCol; ++y) {
 
-                    float pixelRectLeft = (float) (x * (charPixelWidth + mPixelHorizontalSpaceWeight
-                            * mUnitWidth));
-                    float pixelRectTop = (float) (y * (charPixelHeight + mPixelVerticalSpaceWeight
-                            * mUnitHeight));
-                    float pixelRectRight = (float) (pixelRectLeft + charPixelWidth);
-                    float pixelRectBottom = (float) (pixelRectTop + charPixelHeight);
+                    float pixelRectLeft = (float) (x * Math.round(mPixelWidth + mPixelSpaceWidth));
+                    float pixelRectTop = (float) (y * Math.round(mPixelHeight + mPixelSpaceHeight));
+                    float pixelRectRight = (float) (pixelRectLeft + mPixelWidth);
+                    float pixelRectBottom = (float) (pixelRectTop + mPixelHeight);
 
                     RectF pixelRect = new RectF(pixelRectLeft, pixelRectTop,
                             pixelRectRight, pixelRectBottom);
@@ -538,7 +573,7 @@ public class CharLcmView extends View {
                     else
                         pixelPaint.setColor(mNegativePixelColor);
                     if (mIsRoundRectPixel)
-                        canvas.drawRoundRect(pixelRect, (float) charPixelWidth * 0.3f, (float) charPixelWidth * 0.3f, pixelPaint);
+                        canvas.drawRoundRect(pixelRect, (float) mPixelWidth * 0.3f, (float) mPixelHeight * 0.3f, pixelPaint);
                     else
                         canvas.drawRect(pixelRect, pixelPaint);
 
@@ -596,11 +631,8 @@ public class CharLcmView extends View {
         }
 
         public void getActualCursor(Point cursor, PointF actualCursor) {
-
-            actualCursor.x = (float) (mMarginWeight * mUnitWidth + mCharWidthOffset
-                    * cursor.x);
-            actualCursor.y = (float) (mMarginWeight * mUnitHeight + mCharHeightOffset
-                    * cursor.y);
+            actualCursor.x = (float) (mMarginWidth + mCharWidthOffset * cursor.x);
+            actualCursor.y = (float) (mMarginHeight + mCharHeightOffset * cursor.y);
         }
 
         public void getActualCursor(int x, int y, PointF actualCursor) {

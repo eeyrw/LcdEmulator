@@ -21,4 +21,5 @@
 
     <!-- Sync Preferences -->
     <string name="about_page_description">Re-use the old cell phone for the PC\'s information display attachment screen.</string>
+    <string name="point2point_title">Use point-to-point render</string>
 </resources>

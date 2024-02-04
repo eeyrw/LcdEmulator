@@ -41,7 +41,7 @@ public class ProtocolProcessor {
                 // lcd_init(Buf[1],Buf[2]);
                 mLcmEmView.setColRow(Buf[1], Buf[2]);
                 mLcmEmView.clearScreen();
-                mLcmEmView.reGenResoures();
+                mLcmEmView.reGenResources();
 
                 break;
 

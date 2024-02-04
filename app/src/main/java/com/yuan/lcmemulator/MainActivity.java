@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             mCharLcdView.setColRow(20, 4);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
+            mCharLcdView.setUsePoint2PointRender(prefs.getBoolean("prefUsePoint2PointRender", false));
             int color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefLcdPanelColor", ContextCompat.getColor(this, R.color.LcdPanelColor));
             mCharLcdView.setLcdPanelColor(color);
             color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefPositivePixelColor", ContextCompat.getColor(this, R.color.PostivePixelColor));

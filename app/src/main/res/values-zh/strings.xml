@@ -23,5 +23,6 @@
     <string name="wrong_format_portnum">端口号输入格式错误。</string>
 
     <string name="about_page_description">旧手机做PC的信息展示附屏。</string>
+    <string name="point2point_title">使用点到点渲染</string>
 
 </resources>

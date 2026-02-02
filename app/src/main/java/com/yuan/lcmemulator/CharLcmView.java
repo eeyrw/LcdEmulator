@@ -214,11 +214,6 @@ public class CharLcmView extends View {
         mCursorY = cursor.y;
     }
 
-    public void getCursor(int x, int y) {
-        x = mCursorX;
-        y = mCursorY;
-    }
-
     public void getCursor(Point cursor) {
         cursor.x = mCursorX;
         cursor.y = mCursorY;
@@ -244,9 +239,9 @@ public class CharLcmView extends View {
         forceReDraw();
     }
 
-    public void getColRow(int col, int row) {
-        col = mColNum;
-        row = mRowNum;
+    public void getColRow(Point colRow) {
+        colRow.x = mColNum;
+        colRow.y = mRowNum;
     }
 
     @Override
@@ -289,19 +284,18 @@ public class CharLcmView extends View {
         int width = getWidth();
         int height = getHeight();
 
-        Paint paint = new Paint();
         canvas.drawColor(mLcdPanelColor);
         //canvas.drawRect(0, 0, width, height, paint);
         canvas.translate(paddingLeft, paddingTop);
         int dy = 0;
-        PointF postion = new PointF();
+        PointF position = new PointF();
         if (mFontCalc != null) {
             for (int y = 0; y < mRowNum; y++) {
                 for (int x = 0; x < mColNum; x++) {
-                    mFontCalc.getActualCursor(x, y, postion);// y*mColNum+x+32
+                    mFontCalc.getActualCursor(x, y, position);// y*mColNum+x+32
                     canvas.drawBitmap(mFontCalc
                                     .getCharBitmap(mLcmChars[Math.min(dy + x, mLcmChars.length - 1)]),
-                            postion.x, postion.y, null);
+                            position.x, position.y, null);
                 }
                 dy += mColNum;
             }
@@ -311,7 +305,7 @@ public class CharLcmView extends View {
 
     public class FontCalc {
 
-        private byte[] mRawFontsData = { // 纵向排列的。
+        private final byte[] mRawFontsData = { // 纵向排列的。
                 0x00, 0x00, 0x00, 0x00, 0x00,// ' '
                 0x00, 0x00, 0x5F, 0x00, 0x00,// !
                 0x00, 0x07, 0x00, 0x07, 0x00,// "

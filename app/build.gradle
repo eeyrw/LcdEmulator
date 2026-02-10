@@ -8,6 +8,9 @@ android {
         minSdkVersion 15
         targetSdkVersion 33
     }
+
+    namespace 'com.yuan.lcmemulator'
+
     signingConfigs {
         release {
             if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {

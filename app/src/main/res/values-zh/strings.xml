@@ -24,5 +24,12 @@
 
     <string name="about_page_description">旧手机做PC的信息展示附屏。</string>
     <string name="point2point_title">使用点到点渲染</string>
+    <string name="color_presets">颜色预设</string>
+    <string name="close">关闭</string>
+    <string name="general_settings">常规设置</string>
+    <string name="back">返回</string>
+    <string name="more_settings">更多设置</string>
+    <string name="builtin">内置</string>
+    <string name="custom">自定义</string>
 
 </resources>

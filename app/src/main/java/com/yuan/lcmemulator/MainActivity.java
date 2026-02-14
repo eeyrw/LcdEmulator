@@ -13,9 +13,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -23,7 +25,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener {
+public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener, ColorPickerDialogListener,
+        ThemeManager.Listener {
 
     private boolean switcher = false;
     private CharLcmView mCharLcdView;
@@ -32,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private final String TAG = "LCDEM";
     private static final int FLING_MIN_DISTANCE = 50;
     private static final int FLING_MIN_VELOCITY = 0;
+
+    private OsdController osdController;
+    private ThemeManager themeManager;
 
 
     @Override
@@ -85,12 +91,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
             mCharLcdView.setUsePoint2PointRender(prefs.getBoolean("prefUsePoint2PointRender", false));
-            int color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefLcdPanelColor", ContextCompat.getColor(this, R.color.LcdPanelColor));
-            mCharLcdView.setLcdPanelColor(color);
-            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefPositivePixelColor", ContextCompat.getColor(this, R.color.PostivePixelColor));
-            mCharLcdView.setPositivePixelColor(color);
-            color = PreferenceManager.getDefaultSharedPreferences(this).getInt("prefNegativePixelColor", ContextCompat.getColor(this, R.color.NegetivePixelColor));
-            mCharLcdView.setNegativePixelColor(color);
         }
         try {
             socketPort = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("prefPortNumber", "2400"));
@@ -108,10 +108,31 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d("LCDEM", "onCreate...");
+
+
         setTitle(R.string.appbar_title);
-        updateCharLcmSettings();
 
         mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
+
+        updateCharLcmSettings();
+
+
+        themeManager = new ThemeManager(this);
+        themeManager.register(this);
+
+        osdController = new OsdController(
+                this,
+                findViewById(R.id.osdOverlay),
+                themeManager.getRepository(),
+                new OsdController.PresetSelectListener() {
+                    @Override
+                    public void onPresetSelected(ColorPreset preset) {
+                        themeManager.selectPreset(preset.id);
+                    }
+                }
+        );
+
+
         String ipString = getIpAddressString();
         if (ipString == "") {
             mCharLcdView.writeStr("Fail to get IP address.");
@@ -124,6 +145,12 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         detector = new GestureDetector(this, this);
         intoFullScreen();
 
+
+        mCharLcdView.setOnLongClickListener(v -> {
+            osdController.show();
+            return true;
+        });
+
         if (Build.VERSION.SDK_INT < 16) {
             final View decorView = getWindow().getDecorView();
             decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
@@ -135,6 +162,27 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 }
             });
         }
+
+    }
+
+    @Override
+    public void onThemeChanged(ColorPreset preset) {
+        if (preset == null || mCharLcdView == null) return;
+        mCharLcdView.setLcdColorPresent(preset.panelColor, preset.positiveColor, preset.negativeColor);
+    }
+
+    @Override
+    public void onColorSelected(int dialogId, @ColorInt int color) {
+        osdController.proxyColorPickDialogReturn(dialogId, color);
+    }
+
+    /**
+     * Callback that is invoked when the color picker dialog was dismissed.
+     *
+     * @param dialogId The dialog id used to create the dialog instance.
+     */
+    @Override
+    public void onDialogDismissed(int dialogId) {
 
     }
 
@@ -194,7 +242,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         if (Build.VERSION.SDK_INT < 16) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        getSupportActionBar().show();
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -206,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        getSupportActionBar().hide();
 
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -220,7 +266,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            // midiPlayer.mEngine.noteOn(45);
             //toggleHideyBar();
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
         }

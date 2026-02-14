@@ -22,4 +22,11 @@
     <!-- Sync Preferences -->
     <string name="about_page_description">Re-use the old cell phone for the PC\'s information display attachment screen.</string>
     <string name="point2point_title">Use point-to-point render</string>
+    <string name="color_presets">Color Presets</string>
+    <string name="close">Close</string>
+    <string name="general_settings">General Settings</string>
+    <string name="back">Back</string>
+    <string name="more_settings">More settings</string>
+    <string name="builtin">Builtin</string>
+    <string name="custom">Custom</string>
 </resources>

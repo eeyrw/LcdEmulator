@@ -72,6 +72,14 @@ public class CharLcmView extends View {
 
     private boolean mIsRoundRectPixel;
 
+    public void setLcdColorPresent(int mLcdPanelColor, int mPositivePixelColor, int mNegativePixelColor) {
+        this.mLcdPanelColor = mLcdPanelColor;
+        this.mPositivePixelColor = mPositivePixelColor;
+        this.mNegativePixelColor = mNegativePixelColor;
+        reGenResources();
+        forceReDraw();
+    }
+
     public void setLcdPanelColor(int mLcdPanelColor) {
         this.mLcdPanelColor = mLcdPanelColor;
         reGenResources();

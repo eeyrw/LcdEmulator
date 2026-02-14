@@ -32,6 +32,7 @@
         <activity
             android:exported="true"
             android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="sensorLandscape">
             <intent-filter>

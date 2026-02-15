@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -139,7 +140,7 @@ public class OsdController {
 
         Button btnOpenColor = page.findViewById(R.id.btnOpenColorPage);
         Button btnMoreSettings = page.findViewById(R.id.btnMoreSettings);
-        Button btnClose = page.findViewById(R.id.btnCloseOsd);
+        ImageButton btnClose = page.findViewById(R.id.btnCloseOsd);
         Button btnAbout = page.findViewById(R.id.btnAbout);
 
         btnOpenColor.setOnClickListener(v ->
@@ -164,8 +165,8 @@ public class OsdController {
     private void initColorPage(View root) {
         colorPager = root.findViewById(R.id.colorPresentPager);
 
-        Button btnClose = root.findViewById(R.id.btnClose);
-        Button btnBack = root.findViewById(R.id.btnBackToSettings);
+        ImageButton btnClose = root.findViewById(R.id.btnClose);
+        ImageButton btnBack = root.findViewById(R.id.btnBackToSettings);
 
         btnBack.setOnClickListener(v ->
                 osdPager.setCurrentItem(0, true));

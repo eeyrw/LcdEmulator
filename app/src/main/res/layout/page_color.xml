@@ -2,14 +2,15 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="true"
     android:focusable="true"
-    android:gravity="center">
+    android:background="#CC222222">
 
+    <!-- 主内容 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#CC222222"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -22,7 +23,7 @@
             android:textColor="#FFFFFF"
             android:textSize="18sp" />
 
-        <!-- 自定义Tab -->
+        <!-- Tab -->
         <LinearLayout
             android:id="@+id/tabContainer"
             android:layout_width="match_parent"
@@ -49,7 +50,6 @@
                 android:gravity="center"
                 android:text="@string/custom"
                 android:textColor="#AAAAAA" />
-
         </LinearLayout>
 
         <!-- ViewPager -->
@@ -59,31 +59,38 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- 底部按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:weightSum="2">
+    </LinearLayout>
 
-            <Button
-                android:id="@+id/btnBackToSettings"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/back" />
 
-            <Button
-                android:id="@+id/btnClose"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_weight="1"
-                android:text="@string/close" />
+    <!-- 🔥 右上角图标按钮区域 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/btnBackToSettings"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            android:padding="6dp"
+            android:src="@drawable/ic_arrow_back_24"
+            app:tint="#CCCCCC" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/close"
+            android:padding="6dp"
+            android:src="@drawable/ic_close_24"
+            app:tint="#CCCCCC" />
 
     </LinearLayout>
 

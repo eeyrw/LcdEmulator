@@ -55,6 +55,6 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:padding="8dp"
-        android:src="@android:drawable/ic_menu_more"
-        app:tint="#FFFFFF" />
+        android:src="@drawable/ic_more_vert_24"
+        app:tint="#CCCCCC" />
 </LinearLayout>

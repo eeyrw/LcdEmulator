@@ -32,15 +32,23 @@ public class ProtocolProcessor {
         this.mSocket = socket;
     }
 
+    private void runOnUi(Runnable r) {
+        mLcmEmView.post(r);
+    }
+
     public void Process(byte[] Buf) throws IOException {
 
         switch (Buf[0]) {
             case CMD_LCD_INIT:
                 Log.i(TAG, "CMD_LCD_INIT: " + Buf[1] + "," + Buf[2]);
-
+                int col = Buf[1];
+                int row = Buf[2];
+                runOnUi(() -> {
+                    mLcmEmView.setColRow(col, row);
+                    mLcmEmView.clearScreen();
+                });
                 // lcd_init(Buf[1],Buf[2]);
-                mLcmEmView.setColRow(Buf[1], Buf[2]);
-                mLcmEmView.clearScreen();
+
 
                 break;
 
@@ -67,7 +75,10 @@ public class ProtocolProcessor {
 
                 try {
                     String srt2 = new String(str, "UTF-8");
-                    mLcmEmView.writeStr(srt2);
+                    String text = srt2;
+                    runOnUi(() -> {
+                        mLcmEmView.writeStr(text);
+                    });
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -75,7 +86,9 @@ public class ProtocolProcessor {
                 break;
 
             case CMD_LCD_SETCURSOR:
-                mLcmEmView.setCursor(Buf[1], Buf[2]);
+                int xx = Buf[1];
+                int y = Buf[2];
+                runOnUi(() -> mLcmEmView.setCursor(xx, y));
                 break;
 
             case CMD_LCD_CUSTOMCHAR:
@@ -93,8 +106,11 @@ public class ProtocolProcessor {
                     }
                     font[i] = b;
                 }
-
-                mLcmEmView.setCustomFont(Buf[1], font);
+                byte[] fontCopy = font.clone();
+                int index = Buf[1];
+                runOnUi(() -> {
+                    mLcmEmView.setCustomFont(index, fontCopy);
+                });
                 break;
 
             case CMD_LCD_WRITECMD:

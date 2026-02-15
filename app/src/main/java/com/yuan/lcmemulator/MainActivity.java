@@ -2,15 +2,12 @@ package com.yuan.lcmemulator;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
@@ -19,320 +16,268 @@ import androidx.preference.PreferenceManager;
 
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener, ColorPickerDialogListener,
+public class MainActivity extends AppCompatActivity
+        implements GestureDetector.OnGestureListener,
+        ColorPickerDialogListener,
         ThemeManager.Listener {
 
-    private boolean switcher = false;
-    private CharLcmView mCharLcdView;
+    private static final String TAG = "LCDEM";
+    private static final int DEFAULT_PORT = 2400;
+    private static final int FLING_DISTANCE = 50;
+
+    private CharLcmView lcdView;
     private TcpServer tcpServer;
-    private int socketPort = 2400;
-    private final String TAG = "LCDEM";
-    private static final int FLING_MIN_DISTANCE = 50;
-    private static final int FLING_MIN_VELOCITY = 0;
-
-    private OsdController osdController;
+    private GestureDetector gestureDetector;
     private ThemeManager themeManager;
+    private OsdController osdController;
 
+    private int socketPort = DEFAULT_PORT;
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    public static String getIpAddressString() {
-        try {
-            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
-                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
-                NetworkInterface netI = enNetI.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = netI
-                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress())
-                        return inetAddress.getHostAddress();
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    // onPause 方法中结束
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("LCDEM", "onPause...");
-        tcpServer.setRunListen(false);
-        tcpServer.Close();
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d("LCDEM", "onStop...");
-        tcpServer.setRunListen(false);
-        tcpServer.Close();
-    }
-
-    private GestureDetector detector;
-
-    private void updateCharLcmSettings() {
-        if (mCharLcdView != null) {
-            mCharLcdView.setColRow(20, 4);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            mCharLcdView.setRoundRectPixel(prefs.getBoolean("prefIsRoundBorderPixel", false));
-            mCharLcdView.setUsePoint2PointRender(prefs.getBoolean("prefUsePoint2PointRender", false));
-        }
-        try {
-            socketPort = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("prefPortNumber", "2400"));
-        } catch (Exception e) {
-            Toast toast = Toast.makeText(this /* MyActivity */, R.string.wrong_format_portnum, Toast.LENGTH_LONG);
-            SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
-            prefs.putString("prefPortNumber", "2400");
-            prefs.apply();
-            toast.show();
-        }
-    }
+    // ===========================
+    // Lifecycle
+    // ===========================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("LCDEM", "onCreate...");
 
+        Log.d(TAG, "onCreate");
 
-        setTitle(R.string.appbar_title);
+        initViews();
+        updateLcdSettings();
+        initTheme();
+        initOsd();
+        initGesture();
+        initNetwork();
 
-        mCharLcdView = (CharLcmView) findViewById(R.id.CHAR_LCD_VIEW);
+        displayIpAddress();
 
-        updateCharLcmSettings();
+        FullScreenHelper.enterFullScreen(this);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        tcpServer.start();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        tcpServer.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        themeManager.unregister(this);
+    }
+
+    // ===========================
+    // Initialization
+    // ===========================
+
+    private void initViews() {
+        lcdView = findViewById(R.id.CHAR_LCD_VIEW);
+
+        lcdView.setOnLongClickListener(v -> {
+            osdController.show();
+            return true;
+        });
+    }
+
+    private void initTheme() {
         themeManager = new ThemeManager(this);
         themeManager.register(this);
+    }
 
+    private void initOsd() {
         osdController = new OsdController(
                 this,
                 findViewById(R.id.osdOverlay),
                 themeManager.getRepository(),
-                new OsdController.PresetSelectListener() {
-                    @Override
-                    public void onPresetSelected(ColorPreset preset) {
-                        themeManager.selectPreset(preset.id);
-                    }
-                }
+                preset -> themeManager.selectPreset(preset.id)
         );
-
-
-        String ipString = getIpAddressString();
-        if (ipString == "") {
-            mCharLcdView.writeStr("Fail to get IP address.");
-        } else {
-            mCharLcdView.writeStr("IP:" + ipString);
-        }
-
-
-        tcpServer = new TcpServer(socketPort, mCharLcdView);
-        detector = new GestureDetector(this, this);
-        intoFullScreen();
-
-
-        mCharLcdView.setOnLongClickListener(v -> {
-            osdController.show();
-            return true;
-        });
-
-        if (Build.VERSION.SDK_INT < 16) {
-            final View decorView = getWindow().getDecorView();
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int visibility) {
-                    if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
-                        exitFullScreen();
-                    }
-                }
-            });
-        }
-
     }
+
+    private void initGesture() {
+        gestureDetector = new GestureDetector(this, this);
+    }
+
+    private void initNetwork() {
+        socketPort = loadPortFromPrefs();
+        tcpServer = new TcpServer(socketPort, lcdView);
+    }
+
+    // ===========================
+    // Settings
+    // ===========================
+
+    private void updateLcdSettings() {
+        if (lcdView == null) return;
+
+        SharedPreferences prefs =
+                PreferenceManager.getDefaultSharedPreferences(this);
+
+        lcdView.setColRow(20, 4);
+        lcdView.setRoundRectPixel(
+                prefs.getBoolean("prefIsRoundBorderPixel", false)
+        );
+        lcdView.setUsePoint2PointRender(
+                prefs.getBoolean("prefUsePoint2PointRender", false)
+        );
+    }
+
+    private int loadPortFromPrefs() {
+        try {
+            return Integer.parseInt(
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .getString("prefPortNumber", String.valueOf(DEFAULT_PORT))
+            );
+        } catch (NumberFormatException e) {
+            Toast.makeText(
+                    this,
+                    R.string.wrong_format_portnum,
+                    Toast.LENGTH_LONG
+            ).show();
+
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putString("prefPortNumber", String.valueOf(DEFAULT_PORT))
+                    .apply();
+
+            return DEFAULT_PORT;
+        }
+    }
+
+    // ===========================
+    // Theme Callback
+    // ===========================
 
     @Override
     public void onThemeChanged(ColorPreset preset) {
-        if (preset == null || mCharLcdView == null) return;
-        mCharLcdView.setLcdColorPresent(preset.panelColor, preset.positiveColor, preset.negativeColor);
+        if (preset == null || lcdView == null) return;
+
+        lcdView.setLcdColorPresent(
+                preset.panelColor,
+                preset.positiveColor,
+                preset.negativeColor
+        );
     }
+
+    // ===========================
+    // Color Picker Callback
+    // ===========================
 
     @Override
     public void onColorSelected(int dialogId, @ColorInt int color) {
         osdController.proxyColorPickDialogReturn(dialogId, color);
     }
 
-    /**
-     * Callback that is invoked when the color picker dialog was dismissed.
-     *
-     * @param dialogId The dialog id used to create the dialog instance.
-     */
     @Override
     public void onDialogDismissed(int dialogId) {
-
+        // no-op
     }
 
+    // ===========================
+    // Gesture Handling
+    // ===========================
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("LCDEM", "onResume...");
-        if (tcpServer == null || tcpServer.isRunListen() == false) {
-            tcpServer = new TcpServer(socketPort, mCharLcdView);
-            tcpServer.setRunListen(true);
+    public boolean onFling(MotionEvent e1, MotionEvent e2,
+                           float velocityX, float velocityY) {
+
+        if (e1.getY() - e2.getY() > FLING_DISTANCE) {
+            FullScreenHelper.enterFullScreen(this);
+        } else if (e2.getY() - e1.getY() > FLING_DISTANCE) {
+            FullScreenHelper.exitFullScreen(this);
         }
-        updateCharLcmSettings();
 
-    }
-
-    @Override
-    public boolean onDown(MotionEvent motionEvent) {
         return false;
     }
 
     @Override
-    public void onShowPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent motionEvent) {
+    public boolean onDown(MotionEvent e) {
         return false;
     }
 
     @Override
-    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+    public void onShowPress(MotionEvent e) {
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
         return false;
     }
 
     @Override
-    public void onLongPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (e1.getY() - e2.getY() > FLING_MIN_DISTANCE
-                && Math.abs(velocityY) > FLING_MIN_VELOCITY) {
-            Log.d(TAG, "UP");
-            intoFullScreen();
-            // Fling left
-        } else if (e2.getY() - e1.getY() > FLING_MIN_DISTANCE
-                && Math.abs(velocityY) > FLING_MIN_VELOCITY) {
-            Log.d(TAG, "DOWN");
-            exitFullScreen();
-        }
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float dx, float dy) {
         return false;
     }
 
-    private void exitFullScreen() {
-        if (Build.VERSION.SDK_INT < 16) {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-    }
-
-    private void intoFullScreen() {
-        if (Build.VERSION.SDK_INT < 16) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    @Override
+    public void onLongPress(MotionEvent e) {
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            //toggleHideyBar();
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-        }
-        detector.onTouchEvent(event);
+        gestureDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
+    }
+
+    // ===========================
+    // Menu
+    // ===========================
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivityForResult(intent, 0);//此处的requestCode应与下面结果处理函中调用的requestCode一致
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
-        } else if (id == R.id.action_about) {
-            Intent intent2 = new Intent(MainActivity.this, AboutPageActivity.class);
-            startActivityForResult(intent2, 0);//此处的requestCode应与下面结果处理函中调用的requestCode一致
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
+
+        if (id == R.id.action_about) {
+            startActivity(new Intent(this, AboutPageActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
-    public void toggleHideyBar() {
-        //getActionBar().hide();
-        getSupportActionBar().hide();
-        // BEGIN_INCLUDE (get_current_ui_flags)
-        // The UI options currently enabled are represented by a bitfield.
-        // getSystemUiVisibility() gives us that bitfield.
-        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-        int newUiOptions = uiOptions;
-        // END_INCLUDE (get_current_ui_flags)
-        // BEGIN_INCLUDE (toggle_ui_flags)
-        boolean isImmersiveModeEnabled =
-                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            Log.i(TAG, "Turning immersive mode mode off. ");
-        } else {
-            Log.i(TAG, "Turning immersive mode mode on.");
-        }
+    // ===========================
+    // Utility
+    // ===========================
 
-        // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        }
-
-        // Status bar hiding: Backwards compatible to Jellybean
-        if (Build.VERSION.SDK_INT >= 16) {
-            newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
-
-        // Immersive mode: Backward compatible to KitKat.
-        // Note that this flag doesn't do anything by itself, it only augments the behavior
-        // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
-        // all three flags are being toggled together.
-        // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
-        // Sticky immersive mode differs in that it makes the navigation and status bars
-        // semi-transparent, and the UI flag does not get cleared when the user interacts with
-        // the screen.
-        if (Build.VERSION.SDK_INT >= 18) {
-            newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
-        //END_INCLUDE (set_ui_flags)
+    private void displayIpAddress() {
+        String ip = NetworkUtils.getIpv4Address();
+        lcdView.writeStr(
+                ip.isEmpty()
+                        ? "Fail to get IP address."
+                        : "IP:" + ip
+        );
     }
-
 
 }

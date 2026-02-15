@@ -12,97 +12,127 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class TcpServer {
-    private CharLcmView mLcmEmView;
-    private ServerSocket server;
 
-    public boolean isRunListen() {
-        return mRunListen;
+    private static final String TAG = "LCDEM";
+
+    private final CharLcmView lcdView;
+
+    private ServerSocket serverSocket;
+    private Thread serverThread;
+
+    private volatile boolean running = false;
+    private int port;
+
+    public TcpServer(int port, CharLcmView lcdView) {
+        this.port = port;
+        this.lcdView = lcdView;
     }
 
-    public void setRunListen(boolean mRunListen) {
-        this.mRunListen = mRunListen;
-    }
+    /* ==========================
+       生命周期控制
+       ========================== */
 
-    // MyHandler myHandler;
-    private boolean mRunListen;
+    public synchronized void start() {
+        if (running) return;
 
-    public TcpServer(final int port, CharLcmView lcmEmView) {
+        running = true;
 
-        mLcmEmView = lcmEmView;
-        mRunListen = true;
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    server = new ServerSocket(port);
-                    while (mRunListen)
-                        beginListen();
-                } catch (IOException e) {
-                    Close();
-                    e.printStackTrace();
+        serverThread = new Thread(() -> {
+            try {
+                serverSocket = new ServerSocket(port);
+                Log.d(TAG, "Server started on port: " + port);
+
+                while (running) {
+                    listenClient();
                 }
+
+            } catch (IOException e) {
+                Log.e(TAG, "Server error", e);
+            } finally {
+                closeServerSocket();
             }
-        }).start();
+        });
+
+        serverThread.start();
     }
 
-    public void Close() {
-        try {
-            if (server != null)
-                server.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public synchronized void stop() {
+        running = false;
+        closeServerSocket();
+
+        if (serverThread != null) {
+            serverThread.interrupt();
+            serverThread = null;
         }
+
+        Log.d(TAG, "Server stopped.");
     }
 
-    /**
-     * 接受消息,处理消息 ,此Handler会与当前主线程一块运行
-     */
+    public synchronized void updatePort(int newPort) {
+        if (this.port == newPort) return;
 
-//    class MyHandler extends Handler {
-//        public MyHandler() {
-//        }
-//
-//        public MyHandler(Looper L) {
-//            super(L);
-//        }
-//
-//        // 子类必须重写此方法,接受数据
-//        @Override
-//        public void handleMessage(Message msg) {
-//            Log.d("MyHandler", "handleMessage......");
-//            super.handleMessage(msg);
-//            // 此处可以更新UI
-//            Bundle b = msg.getData();
-//            byte[] arr = b.getByteArray("AAA");
-//            ps.Process(arr);
-//            Log.d("MyHandler", arr.toString());
-//        }
-//    }
-    public void beginListen() {
+        stop();
+        this.port = newPort;
+        start();
+    }
 
-        // new Thread(new Runnable() {
-        //     public void run() {
+    public boolean isRunning() {
+        return running;
+    }
+
+    /* ==========================
+       监听客户端
+       ========================== */
+
+    private void listenClient() {
         try {
-            Log.d("LCDEM", "Start listening...");
-            Socket socket = server.accept();
+            Log.d(TAG, "Waiting for client...");
+            Socket socket = serverSocket.accept();
             socket.setTcpNoDelay(true);
-            Log.d("LCDEM", "Socket accepted.");
 
-            InputStream input = socket.getInputStream();
-            ReceiveFifo fifo = new ReceiveFifo(input);
-            ProtocolProcessor protocolProcessor = new ProtocolProcessor(mLcmEmView, socket);
-            FrameProcessor frameProcessor = new FrameProcessor(protocolProcessor, fifo);
-            while ((!socket.isClosed()) && mRunListen) {
-                if (input != null) {
-                    frameProcessor.ParseEventFrameStream();
-                }
-            }
-            socket.close();
-            Log.d("LCDEM", "Socket closed.");
+            Log.d(TAG, "Client connected.");
+
+            handleClient(socket);
+
         } catch (IOException e) {
-            e.printStackTrace();
+            if (running) {
+                Log.e(TAG, "Accept error", e);
+            }
         }
-        // }
-        // }).start();
+    }
 
+    private void handleClient(Socket socket) {
+        try {
+            InputStream input = socket.getInputStream();
+
+            ReceiveFifo fifo = new ReceiveFifo(input);
+            ProtocolProcessor protocolProcessor =
+                    new ProtocolProcessor(lcdView, socket);
+            FrameProcessor frameProcessor =
+                    new FrameProcessor(protocolProcessor, fifo);
+
+            while (running && !socket.isClosed()) {
+                frameProcessor.ParseEventFrameStream();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Client error", e);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
+
+            Log.d(TAG, "Client disconnected.");
+        }
+    }
+
+    private void closeServerSocket() {
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException ignored) {
+        }
     }
 }

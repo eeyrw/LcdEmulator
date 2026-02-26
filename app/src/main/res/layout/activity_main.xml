@@ -43,5 +43,17 @@
             android:layout_height="match_parent" />
 
     </FrameLayout>
+    <!-- 小齿轮按钮 -->
+    <ImageView
+        android:id="@+id/gearButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:alpha="0"
+        android:src="@drawable/ic_settings_48"
+        android:tint="#CCCCCC"
+        android:visibility="gone"
+        app:tint="#CCCCCC" />
 
 </FrameLayout>

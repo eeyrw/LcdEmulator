@@ -93,11 +93,6 @@ public class MainActivity extends AppCompatActivity
 
     private void initViews() {
         lcdView = findViewById(R.id.CHAR_LCD_VIEW);
-
-        lcdView.setOnLongClickListener(v -> {
-            osdController.show();
-            return true;
-        });
     }
 
     private void initTheme() {
@@ -201,11 +196,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onFling(MotionEvent e1, MotionEvent e2,
                            float velocityX, float velocityY) {
 
-        if (e1.getY() - e2.getY() > FLING_DISTANCE) {
-            FullScreenHelper.enterFullScreen(this);
-        } else if (e2.getY() - e1.getY() > FLING_DISTANCE) {
-            FullScreenHelper.exitFullScreen(this);
-        }
+//        if (e1.getX() - e2.getX() > FLING_DISTANCE) { //right->left
+//            //FullScreenHelper.enterFullScreen(this);
+//            osdController.hide();
+//        } else if (e2.getX() - e1.getX() > FLING_DISTANCE) {//left->right
+//            //FullScreenHelper.exitFullScreen(this);
+//            osdController.show();
+//
+//        }
 
         return false;
     }
@@ -221,7 +219,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        return false;
+        osdController.onScreenTapped();
+        return true;
     }
 
     @Override

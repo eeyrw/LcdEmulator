@@ -29,4 +29,6 @@
     <string name="more_settings">More settings</string>
     <string name="builtin">Builtin</string>
     <string name="custom">Custom</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

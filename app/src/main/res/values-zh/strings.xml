@@ -9,7 +9,7 @@
 
     <!-- Preference Titles -->
     <string name="network_settings_header">网络设置</string>
-    <string name="ui_header">UI设置</string>
+    <string name="ui_header">用户界面</string>
 
     <!-- Messages Preferences -->
     <string name="portnum_title">端口号</string>
@@ -31,5 +31,7 @@
     <string name="more_settings">更多设置</string>
     <string name="builtin">内置</string>
     <string name="custom">自定义</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
 
 </resources>

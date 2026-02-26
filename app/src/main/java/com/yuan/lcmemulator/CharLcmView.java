@@ -10,6 +10,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.Arrays;
@@ -46,6 +47,12 @@ public class CharLcmView extends View {
         this.mPositivePixelColor = mPositivePixelColor;
         reGenResources();
         forceReDraw();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // 如果只是显示屏，不需要触摸
+        return false;  // 让事件往上传递
     }
 
     // Color

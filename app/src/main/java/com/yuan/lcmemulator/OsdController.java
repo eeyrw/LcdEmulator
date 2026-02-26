@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +35,15 @@ public class OsdController {
     private ColorPresetAdapter builtinAdapter;
     private ColorPresetAdapter customAdapter;
     private PresetEditDialog presetEditDialog;
+
+
+    private static final long GEAR_VISIBLE_DURATION = 2000;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private View gearButton;
+    private Runnable autoHideRunnable;
+    private boolean isShowing = false;
+
+
     private final ColorPresetAdapter.ActionListener customActionListener =
             new ColorPresetAdapter.ActionListener() {
                 @Override
@@ -104,7 +115,9 @@ public class OsdController {
         this.selectListener = listener;
 
         osdPager = overlay.findViewById(R.id.osdPager);
+        gearButton = activity.findViewById(R.id.gearButton);
         initPager();
+        initGear();
     }
 
     public void proxyColorPickDialogReturn(int diagId, int color) {
@@ -131,6 +144,71 @@ public class OsdController {
 
         initSettingsPage(settingsPage);
         initColorPage(colorPage);
+    }
+
+    private void initGear() {
+
+        gearButton.setOnClickListener(v -> {
+            cancelAutoHide();
+            hideGear();
+            show();
+        });
+    }
+
+    private void showGear() {
+        gearButton.setVisibility(View.VISIBLE);
+        gearButton.setAlpha(0f);
+
+
+        gearButton.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(200)
+                .start();
+    }
+
+    private void showGearTemporarily() {
+
+        showGear();
+
+        cancelAutoHide();
+
+        autoHideRunnable = this::hideGear;
+
+        handler.postDelayed(autoHideRunnable, GEAR_VISIBLE_DURATION);
+    }
+
+    private void hideGear() {
+
+        ObjectAnimator animator = ObjectAnimator.ofFloat(gearButton, "alpha", 1f, 0f);
+        animator.setDuration(200);
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                gearButton.setVisibility(View.GONE);
+                gearButton.setAlpha(1f);
+            }
+        });
+
+        animator.start();
+    }
+
+    private void cancelAutoHide() {
+        if (autoHideRunnable != null) {
+            handler.removeCallbacks(autoHideRunnable);
+        }
+    }
+
+    public void onScreenTapped() {
+
+        if (isShowing) {
+            hide();
+            return;
+        }
+
+        showGearTemporarily();
     }
 
     // =============================
@@ -227,13 +305,14 @@ public class OsdController {
     // OSD 显示隐藏
     // =============================
     public void show() {
+        isShowing = true;
         overlay.setAlpha(0f);
         overlay.setVisibility(View.VISIBLE);
         overlay.animate().alpha(1f).setDuration(200);
     }
 
     public void hide() {
-
+        isShowing = false;
         ObjectAnimator animator = ObjectAnimator.ofFloat(overlay, "alpha", 1f, 0f);
         animator.setDuration(200);
 
@@ -246,6 +325,7 @@ public class OsdController {
         });
 
         animator.start();
+        FullScreenHelper.enterFullScreen((AppCompatActivity) activity);
     }
 
     public interface PresetSelectListener {

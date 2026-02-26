@@ -70,12 +70,12 @@ public class PresetEditDialog extends DialogFragment {
 
 
         AlertDialog.Builder b = new AlertDialog.Builder(requireActivity());
-        b.setTitle("Edit Preset");
+        b.setTitle(R.string.edit_preset);
         b.setView(view);
-        b.setPositiveButton("OK", (d, w) -> listener.onPresetEdited(
+        b.setPositiveButton(R.string.ok, (d, w) -> listener.onPresetEdited(
                 etName.getText().toString(),
                 picked[0], picked[1], picked[2]));
-        b.setNegativeButton("Cancel", null);
+        b.setNegativeButton(R.string.cancel, null);
 
         return b.create();
     }

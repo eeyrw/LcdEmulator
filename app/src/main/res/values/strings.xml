@@ -31,4 +31,7 @@
     <string name="custom">Custom</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="edit_preset">Edit Preset</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

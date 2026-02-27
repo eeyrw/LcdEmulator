@@ -11,7 +11,34 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+
 public class TcpServer {
+    private ConnectionListener connectionListener;
+
+    public void setConnectionListener(ConnectionListener listener) {
+        this.connectionListener = listener;
+    }
+
+    private void listenClient() {
+        try {
+            Log.d(TAG, "Waiting for client...");
+            Socket socket = serverSocket.accept();
+            socket.setTcpNoDelay(true);
+
+            Log.d(TAG, "Client connected.");
+
+            if (connectionListener != null) {
+                connectionListener.onClientConnected();
+            }
+
+            handleClient(socket);
+
+        } catch (IOException e) {
+            if (running) {
+                Log.e(TAG, "Accept error", e);
+            }
+        }
+    }
 
     private static final String TAG = "LCDEM";
 
@@ -84,23 +111,6 @@ public class TcpServer {
        监听客户端
        ========================== */
 
-    private void listenClient() {
-        try {
-            Log.d(TAG, "Waiting for client...");
-            Socket socket = serverSocket.accept();
-            socket.setTcpNoDelay(true);
-
-            Log.d(TAG, "Client connected.");
-
-            handleClient(socket);
-
-        } catch (IOException e) {
-            if (running) {
-                Log.e(TAG, "Accept error", e);
-            }
-        }
-    }
-
     private void handleClient(Socket socket) {
         try {
             InputStream input = socket.getInputStream();
@@ -124,7 +134,16 @@ public class TcpServer {
             }
 
             Log.d(TAG, "Client disconnected.");
+            if (connectionListener != null) {
+                connectionListener.onClientDisconnected();
+            }
         }
+    }
+
+    public interface ConnectionListener {
+        void onClientConnected();
+
+        void onClientDisconnected();
     }
 
     private void closeServerSocket() {

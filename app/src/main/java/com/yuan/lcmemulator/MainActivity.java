@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity
     private static final int FLING_DISTANCE = 50;
 
     private CharLcmView lcdView;
+    private IdleMessageAnimator idleMessageAnimator;
     private TcpServer tcpServer;
     private GestureDetector gestureDetector;
     private ThemeManager themeManager;
@@ -51,9 +52,7 @@ public class MainActivity extends AppCompatActivity
         initOsd();
         initGesture();
         initNetwork();
-
-        displayIpAddress();
-
+        displayIdleMessage();
         FullScreenHelper.enterFullScreen(this);
     }
 
@@ -93,6 +92,16 @@ public class MainActivity extends AppCompatActivity
 
     private void initViews() {
         lcdView = findViewById(R.id.CHAR_LCD_VIEW);
+        idleMessageAnimator = new IdleMessageAnimator(lcdView);
+    }
+
+    private void displayIdleMessage() {
+        String ip = NetworkUtils.getIpv4Address();
+        String ipText = ip.isEmpty()
+                ? "Fail to get IP address."
+                : "WAITING FOR CLIENT\nIP:" + ip;
+
+        idleMessageAnimator.start(ipText);
     }
 
     private void initTheme() {
@@ -116,6 +125,21 @@ public class MainActivity extends AppCompatActivity
     private void initNetwork() {
         socketPort = loadPortFromPrefs();
         tcpServer = new TcpServer(socketPort, lcdView);
+        tcpServer.setConnectionListener(new TcpServer.ConnectionListener() {
+            @Override
+            public void onClientConnected() {
+                runOnUiThread(() -> {
+                    idleMessageAnimator.stop();   // 停止动画
+                });
+            }
+
+            @Override
+            public void onClientDisconnected() {
+                runOnUiThread(() -> {
+                    displayIdleMessage();
+                });
+            }
+        });
     }
 
     // ===========================
@@ -128,7 +152,6 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences prefs =
                 PreferenceManager.getDefaultSharedPreferences(this);
 
-        lcdView.setColRow(20, 4);
         lcdView.setRoundRectPixel(
                 prefs.getBoolean("prefIsRoundBorderPixel", false)
         );
@@ -266,17 +289,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    // ===========================
-    // Utility
-    // ===========================
 
-    private void displayIpAddress() {
-        String ip = NetworkUtils.getIpv4Address();
-        lcdView.writeStr(
-                ip.isEmpty()
-                        ? "Fail to get IP address."
-                        : "IP:" + ip
-        );
-    }
 
 }

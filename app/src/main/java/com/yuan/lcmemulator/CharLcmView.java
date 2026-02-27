@@ -79,6 +79,8 @@ public class CharLcmView extends View {
 
     private boolean mIsRoundRectPixel;
 
+    private boolean mSizeInitialized = false;
+
     public void setLcdColorPresent(int mLcdPanelColor, int mPositivePixelColor, int mNegativePixelColor) {
         this.mLcdPanelColor = mLcdPanelColor;
         this.mPositivePixelColor = mPositivePixelColor;
@@ -166,8 +168,6 @@ public class CharLcmView extends View {
 
         a.recycle();
         // Size
-        mSurfaceHeight = 360;
-        mSurfaceWidth = 640;
         mCursorX = 0;
         mCursorY = 0;
         mColNum = 20;
@@ -186,8 +186,6 @@ public class CharLcmView extends View {
         System.arraycopy(chars, 0, mLcmChars, 0,
                 Math.min(chars.length, mLcmChars.length));
 
-        reGenResources();
-        forceReDraw();
         Log.d(TAG, "Char Lcm Init");
     }
 
@@ -234,24 +232,37 @@ public class CharLcmView extends View {
         cursor.y = mCursorY;
     }
 
-    public void reGenResources() {
-        mFontCalc = new FontCalc(new Point(mColNum, mRowNum), new Point(
-                mSurfaceWidth, mSurfaceHeight), mCustomCharsRaw);
+    private void reGenResources() {
+
+        if (!mSizeInitialized)
+            return;
+
+        mFontCalc = new FontCalc(
+                new Point(mColNum, mRowNum),
+                new Point(mSurfaceWidth, mSurfaceHeight),
+                mCustomCharsRaw
+        );
     }
 
     public void setColRow(int col, int row) {
+
         if (col != mColNum || row != mRowNum) {
+
             mColNum = col;
             mRowNum = row;
 
-            char[] new_mLcmChars = new char[mColNum * mRowNum];
-            Arrays.fill(new_mLcmChars, ' ');
-            System.arraycopy(mLcmChars, 0, new_mLcmChars, 0,
-                    Math.min(mLcmChars.length, new_mLcmChars.length));
-            mLcmChars = new_mLcmChars;
+            char[] newChars = new char[mColNum * mRowNum];
+            Arrays.fill(newChars, ' ');
+            System.arraycopy(mLcmChars, 0, newChars, 0,
+                    Math.min(mLcmChars.length, newChars.length));
+
+            mLcmChars = newChars;
         }
-        reGenResources();
-        forceReDraw();
+
+        if (mSizeInitialized) {
+            reGenResources();
+            invalidate();
+        }
     }
 
     public void getColRow(Point colRow) {
@@ -259,20 +270,39 @@ public class CharLcmView extends View {
         colRow.y = mRowNum;
     }
 
+    public int getCols() {
+        return mColNum;
+    }
+
+    public int getRows() {
+        return mRowNum;
+    }
+
+    public void putChar(int x, int y, char c) {
+        if (x < 0 || x >= mColNum || y < 0 || y >= mRowNum) return;
+        mLcmChars[y * mColNum + x] = c;
+        forceReDraw();
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
 
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
-        mSurfaceHeight = contentHeight;
+        int contentWidth = w - getPaddingLeft() - getPaddingRight();
+        int contentHeight = h - getPaddingTop() - getPaddingBottom();
+
+        if (contentWidth <= 0 || contentHeight <= 0)
+            return;
+
         mSurfaceWidth = contentWidth;
-        Log.d(TAG, String.format("LCM SIZE CHANGE: h:%d,w:%d", contentHeight, contentWidth));
+        mSurfaceHeight = contentHeight;
+
+        if (!mSizeInitialized) {
+            mSizeInitialized = true;
+        }
+
         reGenResources();
+        invalidate();
     }
 
     @Override
@@ -288,8 +318,6 @@ public class CharLcmView extends View {
 
         int contentWidth = getWidth() - paddingLeft - paddingRight;
         int contentHeight = getHeight() - paddingTop - paddingBottom;
-        mSurfaceHeight = contentHeight;
-        mSurfaceWidth = contentWidth;
 
 
         //char[] MirrorLcmChars = new char[mLcmChars.length];

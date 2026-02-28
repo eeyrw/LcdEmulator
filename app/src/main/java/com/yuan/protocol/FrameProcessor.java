@@ -1,8 +1,11 @@
 package com.yuan.protocol;
 
-import java.io.IOException;
+import static com.yuan.protocol.FrameProcessor.EVENT_FRAME_PARSER_STATUS.IDLE;
+import static com.yuan.protocol.FrameProcessor.EVENT_FRAME_PARSER_STATUS.RECV_CMD_LEN;
+import static com.yuan.protocol.FrameProcessor.EVENT_FRAME_PARSER_STATUS.SOF_HI;
+import static com.yuan.protocol.FrameProcessor.EVENT_FRAME_PARSER_STATUS.SOF_LO;
 
-import static com.yuan.protocol.FrameProcessor.EVENT_FRAME_PARSER_STATUS.*;
+import java.io.IOException;
 
 public class FrameProcessor {
     public FrameProcessor(ProtocolProcessor protocolProcessor, ReceiveFifo client) {
@@ -60,7 +63,7 @@ public class FrameProcessor {
                 //if (client.available() >= cmdLen) {
                     client.read(cmdBuf, cmdLen);
                     int retByteNum = 0;
-                    protocolProcessor.Process(cmdBuf);
+                    protocolProcessor.process(cmdBuf);
                     if (retByteNum > 0) {
                         cmdRetBuf[0] = (byte) (0xFF & EVENT_FRAME_FLAG);
                         cmdRetBuf[1] = (byte) (0xFF & (EVENT_FRAME_FLAG >> 8));

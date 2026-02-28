@@ -1,11 +1,11 @@
 package com.yuan.protocol;
 
+import android.os.Looper;
 import android.util.Log;
 
 import com.yuan.lcmemulator.CharLcmView;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.Arrays;
 
@@ -23,110 +23,162 @@ public class ProtocolProcessor {
     private static final int CMD_ENTER_BOOT = 0x19;
 
     private static final String TAG = "LCDEM";
+
     private final Socket mSocket;
+    private final CharLcmView mLcmEmView;
 
-    private CharLcmView mLcmEmView;
-
-    public ProtocolProcessor(CharLcmView mLcmEmView, Socket socket) {
-        this.mLcmEmView = mLcmEmView;
+    public ProtocolProcessor(CharLcmView view, Socket socket) {
+        this.mLcmEmView = view;
         this.mSocket = socket;
     }
 
+    /**
+     * 保证在 UI 线程执行（兼容 Android 4.x）
+     */
     private void runOnUi(Runnable r) {
-        mLcmEmView.post(r);
-    }
-
-    public void Process(byte[] Buf) throws IOException {
-
-        switch (Buf[0]) {
-            case CMD_LCD_INIT:
-                Log.i(TAG, "CMD_LCD_INIT: " + Buf[1] + "," + Buf[2]);
-                int col = Buf[1];
-                int row = Buf[2];
-                runOnUi(() -> {
-                    mLcmEmView.setColRow(col, row);
-                    mLcmEmView.clearScreen();
-                });
-                // lcd_init(Buf[1],Buf[2]);
-
-
-                break;
-
-            case CMD_LCD_SETBACKLGIHT:
-
-                break;
-
-            case CMD_LCD_SETCONTRAST:
-
-                Log.i(TAG, "CMD_LCD_SETCONTRAST:" + Buf[1]);
-
-                break;
-
-            case CMD_LCD_SETBRIGHTNESS:
-
-                Log.i(TAG, "CMD_LCD_SETBRIGHTNESS:" + Buf[1]);
-
-                break;
-
-            case CMD_LCD_WRITEDATA:
-                byte[] str = new byte[Buf[1]];
-
-                System.arraycopy(Buf, 2, str, 0, str.length);
-
-                try {
-                    String srt2 = new String(str, "UTF-8");
-                    String text = srt2;
-                    runOnUi(() -> {
-                        mLcmEmView.writeStr(text);
-                    });
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-                break;
-
-            case CMD_LCD_SETCURSOR:
-                int xx = Buf[1];
-                int y = Buf[2];
-                runOnUi(() -> mLcmEmView.setCursor(xx, y));
-                break;
-
-            case CMD_LCD_CUSTOMCHAR:
-
-                byte[] font = Arrays.copyOfRange(Buf, 2, 2 + 8);
-                // Reverse bit
-                for (int i = 0; i < font.length; i++) {
-                    byte x = font[i];
-                    byte b = 0;
-
-                    for (int bit = 4; bit >= 0; bit--) {
-                        if ((x & 1 << bit) != 0)
-                            b |= 1 << (4 - bit);
-
-                    }
-                    font[i] = b;
-                }
-                byte[] fontCopy = font.clone();
-                int index = Buf[1];
-                runOnUi(() -> {
-                    mLcmEmView.setCustomFont(index, fontCopy);
-                });
-                break;
-
-            case CMD_LCD_WRITECMD:
-
-                break;
-
-            case CMD_ENTER_BOOT:
-                break;
-            case CMD_LCD_DE_INIT:
-                mSocket.close();
-                break;
-
-            default:
-                break;
-
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            r.run();
+        } else if (mLcmEmView != null) {
+            mLcmEmView.post(r);
         }
     }
 
+    public void process(byte[] buf) throws IOException {
+
+        if (buf == null || buf.length == 0) {
+            return;
+        }
+
+        int cmd = buf[0] & 0xFF;
+
+        switch (cmd) {
+
+            case CMD_LCD_INIT: {
+                if (buf.length < 3) return;
+
+                final int col = buf[1] & 0xFF;
+                final int row = buf[2] & 0xFF;
+
+                Log.i(TAG, "CMD_LCD_INIT: " + col + "," + row);
+
+                runOnUi(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLcmEmView.setColRow(col, row);
+                        mLcmEmView.clearScreen();
+                    }
+                });
+                break;
+            }
+
+            case CMD_LCD_SETCONTRAST: {
+                if (buf.length < 2) return;
+
+                int value = buf[1] & 0xFF;
+                Log.i(TAG, "CMD_LCD_SETCONTRAST: " + value);
+                break;
+            }
+
+            case CMD_LCD_SETBRIGHTNESS: {
+                if (buf.length < 2) return;
+
+                int value = buf[1] & 0xFF;
+                Log.i(TAG, "CMD_LCD_SETBRIGHTNESS: " + value);
+                break;
+            }
+
+            case CMD_LCD_WRITEDATA: {
+                if (buf.length < 2) return;
+
+                int len = buf[1] & 0xFF;
+                if (buf.length < 2 + len) return;
+
+                byte[] strBytes = Arrays.copyOfRange(buf, 2, 2 + len);
+
+                final String text;
+                try {
+                    text = new String(strBytes, "UTF-8");
+                } catch (Exception e) {
+                    Log.e(TAG, "UTF-8 decode failed", e);
+                    return;
+                }
+
+                runOnUi(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLcmEmView.writeStr(text);
+                    }
+                });
+                break;
+            }
+
+            case CMD_LCD_SETCURSOR: {
+                if (buf.length < 3) return;
+
+                final int x = buf[1] & 0xFF;
+                final int y = buf[2] & 0xFF;
+
+                runOnUi(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLcmEmView.setCursor(x, y);
+                    }
+                });
+                break;
+            }
+
+            case CMD_LCD_CUSTOMCHAR: {
+                if (buf.length < 10) return;
+
+                final int index = buf[1] & 0xFF;
+
+                byte[] font = Arrays.copyOfRange(buf, 2, 10);
+
+                reverseFontBits(font);
+
+                final byte[] finalFont = font;
+
+                runOnUi(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLcmEmView.setCustomFont(index, finalFont);
+                    }
+                });
+                break;
+            }
+
+            case CMD_LCD_DE_INIT: {
+                if (mSocket != null && !mSocket.isClosed()) {
+                    mSocket.close();
+                }
+                break;
+            }
+
+            case CMD_ENTER_BOOT:
+            case CMD_LCD_SETBACKLGIHT:
+            case CMD_LCD_WRITECMD:
+            default:
+                Log.w(TAG, "Unhandled command: " + cmd);
+                break;
+        }
+    }
+
+    /**
+     * 反转 5bit 字模（高低位翻转）
+     */
+    private void reverseFontBits(byte[] font) {
+        for (int i = 0; i < font.length; i++) {
+
+            byte x = font[i];
+            byte result = 0;
+
+            for (int bit = 0; bit < 5; bit++) {
+                if ((x & (1 << bit)) != 0) {
+                    result |= 1 << (4 - bit);
+                }
+            }
+
+            font[i] = result;
+        }
+    }
 }

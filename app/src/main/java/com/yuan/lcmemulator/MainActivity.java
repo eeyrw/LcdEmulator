@@ -15,6 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
+import com.yuan.protocol.LcdUdpServer;
+import com.yuan.protocol.ProtocolProcessor;
+import com.yuan.protocol.UdpReceiver;
+
+import java.net.DatagramSocket;
+import java.net.SocketException;
 
 
 public class MainActivity extends AppCompatActivity
@@ -28,7 +34,9 @@ public class MainActivity extends AppCompatActivity
 
     private CharLcmView lcdView;
     private IdleMessageAnimator idleMessageAnimator;
-    private TcpServer tcpServer;
+
+    private LcdUdpServer server;
+
     private GestureDetector gestureDetector;
     private ThemeManager themeManager;
     private OsdController osdController;
@@ -59,7 +67,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        tcpServer.start();
     }
 
     @Override
@@ -72,18 +79,22 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
+        idleMessageAnimator.stop();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        tcpServer.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (server != null) {
+            server.stop();      // release socket, kill threads
+        }
         themeManager.unregister(this);
+
     }
 
     // ===========================
@@ -124,22 +135,23 @@ public class MainActivity extends AppCompatActivity
 
     private void initNetwork() {
         socketPort = loadPortFromPrefs();
-        tcpServer = new TcpServer(socketPort, lcdView);
-        tcpServer.setConnectionListener(new TcpServer.ConnectionListener() {
+        server = new LcdUdpServer(lcdView,socketPort);
+        server.setConnectionListener(new LcdUdpServer.ConnectionListener() {
             @Override
-            public void onClientConnected() {
-                runOnUiThread(() -> {
-                    idleMessageAnimator.stop();   // 停止动画
-                });
+            public void onConnected() {
+                // PC 心跳到达，链路正常
+                idleMessageAnimator.stop();
             }
-
             @Override
-            public void onClientDisconnected() {
-                runOnUiThread(() -> {
-                    displayIdleMessage();
-                });
+            public void onDisconnected() {
+                // 9 秒无 PC 心跳，可切屏保
+                displayIdleMessage();
             }
         });
+
+        //server.setOnDeInitListener(() -> server.stop());
+
+        server.start();
     }
 
     // ===========================
